@@ -86,7 +86,7 @@ public class NatsConnectorConsumer {
 
     private void prepareConsumer() {
         try {
-            this.consumer = consumerCreatorFunction.apply(getKafkaProperties(elementProps, context));
+            this.consumer = consumerCreatorFunction.apply(getNatsProperties(elementProps, context));
             var partitions = assignTopicPartitions(consumer, elementProps.topic().topicName());
             Optional.ofNullable(elementProps.offsets())
                     .ifPresent(offsets -> seekOffsets(consumer, partitions, offsets));
@@ -120,7 +120,7 @@ public class NatsConnectorConsumer {
         for (int i = 0; i < offsets.size(); i++) {
             consumer.seek(partitions.get(i), offsets.get(i));
         }
-        LOG.info("Kafka inbound connector initialized");
+        LOG.info("NATS inbound connector initialized");
     }
 
     public void consume() {
@@ -135,7 +135,7 @@ public class NatsConnectorConsumer {
                 }
             }
         }
-        LOG.debug("Kafka inbound loop finished");
+        LOG.debug("NATS inbound loop finished");
     }
 
     private void pollAndPublish() {
@@ -150,9 +150,9 @@ public class NatsConnectorConsumer {
     }
 
     private void handleMessage(ConsumerRecord<Object, Object> record) {
-        LOG.trace("Kafka message received: key = {}, value = {}", record.key(), record.value());
+        LOG.trace("NATS message received: key = {}, value = {}", record.key(), record.value());
         var reader = avroObjectReader != null ? avroObjectReader : objectMapper.reader();
-        var mappedMessage = convertConsumerRecordToKafkaInboundMessage(record, reader);
+        var mappedMessage = convertConsumerRecordToNatsInboundMessage(record, reader);
         this.context.correlate(mappedMessage);
     }
 
@@ -190,7 +190,7 @@ public class NatsConnectorConsumer {
             consumerStatus = newStatus;
             context.reportHealth(Health.down(error));
             LOG.error(
-                    "Kafka Consumer status changed to DOWN, process {}, version {}, element {}",
+                    "NATS Consumer status changed to DOWN, process {}, version {}, element {}",
                     context.getDefinition().bpmnProcessId(),
                     context.getDefinition().version(),
                     context.getDefinition().elementId(),

@@ -43,7 +43,7 @@ public class NatsExecutable implements InboundConnectorExecutable<InboundConnect
     public void deactivate() {
         LOG.info("Subscription deactivation requested by the Connector runtime");
         try {
-            this.kafkaConnectorConsumer.stopConsumer();
+            this.natsConnectorConsumer.stopConsumer();
         } catch (Exception e) {
             LOG.error("Failed to cancel Connector execution: {}", e.getMessage());
         }

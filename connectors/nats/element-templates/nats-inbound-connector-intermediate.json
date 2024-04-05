@@ -45,7 +45,7 @@
       }
     },
     {
-      "id": "authenticationType",
+      "id": "authentication.type",
       "label": "Authentication type",
       "description": "username/password or token or jwt/nkey",
       "optional": false,
@@ -55,14 +55,14 @@
       },
       "group": "authentication",
       "binding": {
-        "name": "authenticationType",
+        "name": "authentication.type",
         "type": "zeebe:property"
       },
       "type": "Dropdown",
       "choices": [
         {
           "name": "None",
-          "value": "NONE"
+          "value": "none"
         },
         {
           "name": "username/password",
@@ -90,7 +90,7 @@
         "type": "zeebe:property"
       },
       "condition": {
-        "property": "authenticationType",
+        "property": "authentication.type",
         "equals": "credentials"
       }
     },
@@ -106,7 +106,7 @@
         "type": "zeebe:property"
       },
       "condition": {
-        "property": "authenticationType",
+        "property": "authentication.type",
         "equals": "credentials"
       }
     },
@@ -122,7 +122,7 @@
         "type": "zeebe:property"
       },
       "condition": {
-        "property": "authenticationType",
+        "property": "authentication.type",
         "equals": "token"
       }
     },
@@ -138,7 +138,7 @@
         "name": "authentication.jwt"
       },
       "condition": {
-        "property": "authenticationType",
+        "property": "authentication.type",
         "equals": "jwt"
       }
     },
@@ -154,7 +154,7 @@
         "name": "authentication.nkey"
       },
       "condition": {
-        "property": "authenticationType",
+        "property": "authentication.type",
         "equals": "jwt"
       }
     },

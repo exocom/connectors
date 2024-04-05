@@ -7,81 +7,6 @@ import jakarta.validation.constraints.NotEmpty;
 import java.util.Map;
 
 public class NatsConnectorProperties {
-
-    @TemplateProperty(
-            label = "Authentication type",
-            description = "username/password or token or jwt/nkey",
-            group = "authentication",
-            type = TemplateProperty.PropertyType.Dropdown,
-            value = "NONE",
-            choices = {
-                    @TemplateProperty.DropdownPropertyChoice(name = "None", value = "NONE"),
-                    @TemplateProperty.DropdownPropertyChoice(name = "username/password", value = "credentials"),
-                    @TemplateProperty.DropdownPropertyChoice(name = "token", value = "token"),
-                    @TemplateProperty.DropdownPropertyChoice(name = "jwt/nkey", value = "jwt")
-            },
-            binding = @TemplateProperty.PropertyBinding(type = "zeebe:property", name = "authenticationType")
-    )
-    private String authenticationType;
-
-    @TemplateProperty(
-            label = "Username",
-            description = "Provide the username (must have permissions to subscribe to the topic)",
-            group = "authentication",
-            type = TemplateProperty.PropertyType.String,
-            optional = true,
-            binding = @TemplateProperty.PropertyBinding(type = "zeebe:property", name = "authentication.username"),
-            condition = @TemplateProperty.PropertyCondition(property = "authenticationType", equals = "credentials")
-    )
-    private String username;
-
-    @Secret
-    @TemplateProperty(
-            label = "Password",
-            description = "Provide a password for the user",
-            group = "authentication",
-            type = TemplateProperty.PropertyType.String,
-            optional = true,
-            binding = @TemplateProperty.PropertyBinding(type = "zeebe:property", name = "authentication.password"),
-            condition = @TemplateProperty.PropertyCondition(property = "authenticationType", equals = "credentials")
-    )
-    private String password;
-
-    @Secret
-    @TemplateProperty(
-            label = "Token",
-            description = "Provide a token for authentication",
-            group = "authentication",
-            type = TemplateProperty.PropertyType.String,
-            optional = true,
-            binding = @TemplateProperty.PropertyBinding(type = "zeebe:property", name = "authentication.token"),
-            condition = @TemplateProperty.PropertyCondition(property = "authenticationType", equals = "token")
-    )
-    private String token;
-
-    @TemplateProperty(
-            label = "JWT",
-            description = "user JWT for authentication",
-            group = "authentication",
-            type = TemplateProperty.PropertyType.String,
-            optional = true,
-            binding = @TemplateProperty.PropertyBinding(type = "zeebe:input", name = "authentication.jwt"),
-            condition = @TemplateProperty.PropertyCondition(property = "authenticationType", equals = "jwt")
-    )
-    private String jwt;
-
-    @Secret
-    @TemplateProperty(
-            label = "NKey seed",
-            description = "If a seed is provided, the public key, and signature are calculated.",
-            group = "authentication",
-            type = TemplateProperty.PropertyType.String,
-            optional = true,
-            binding = @TemplateProperty.PropertyBinding(type = "zeebe:input", name = "authentication.nkey"),
-            condition = @TemplateProperty.PropertyCondition(property = "authenticationType", equals = "jwt")
-    )
-    private String nkeySeed;
-
     @NotEmpty
     @TemplateProperty(
             label = "Servers",
@@ -108,7 +33,6 @@ public class NatsConnectorProperties {
             optional = true)
     private String durableName;
 
-    @Secret
     @FEEL
     @TemplateProperty(
             label = "Additional options",
