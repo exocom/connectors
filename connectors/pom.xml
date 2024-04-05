@@ -29,6 +29,7 @@
     <module>slack</module>
     <module>soap</module>
     <module>webhook</module>
+    <module>nats</module>
   </modules>
 
   <properties>
