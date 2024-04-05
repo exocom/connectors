@@ -1,20 +1,19 @@
 {
   "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
-  "name": "NATS Intermediate Catch Event Connector",
-  "id": "io.camunda.connectors.inbound.NATS.Intermediate.v1",
+  "name": "NATS Boundary Event Connector",
+  "id": "io.camunda.connectors.inbound.NATS.Boundary.v1",
   "version": 1,
-  "description": "Listen for events on NATS topic and catch an intermediate event when it arrives",
+  "description": "Consume NATS messages as a boundary event",
   "documentationRef": "https://docs.nats.io/",
   "category": {
     "id": "connectors",
     "name": "Connectors"
   },
   "appliesTo": [
-    "bpmn:IntermediateCatchEvent",
-    "bpmn:IntermediateThrowEvent"
+    "bpmn:BoundaryEvent"
   ],
   "elementType": {
-    "value": "bpmn:IntermediateCatchEvent",
+    "value": "bpmn:BoundaryEvent",
     "eventDefinition": "bpmn:MessageEventDefinition"
   },
   "groups": [
