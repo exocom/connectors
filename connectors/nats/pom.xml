@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -35,6 +34,35 @@
     </dependency>
 
     <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-avro</artifactId>
+      <version>${version.jackson-bom}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.xerial.snappy</groupId>
+      <artifactId>snappy-java</artifactId>
+      <version>${version.snappy-java}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-text</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>kafka</artifactId>
+      <version>${version.testcontainers}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.skyscreamer</groupId>
+      <artifactId>jsonassert</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>io.camunda.connector</groupId>
       <artifactId>element-template-generator-core</artifactId>
     </dependency>
@@ -48,33 +76,11 @@
         <configuration>
           <connectors>
             <connector>
-              <connectorClass>io.camunda.connector.kafka.outbound.NatsConnectorFunction</connectorClass>
-              <files>
-                <file>
-                  <templateId>io.camunda.connectors.KAFKA.v1</templateId>
-                  <templateFileName>nats-outbound-connector.json</templateFileName>
-                </file>
-              </files>
-              <generateHybridTemplates>true</generateHybridTemplates>
-            </connector>
-            <connector>
               <connectorClass>io.camunda.connector.nats.inbound.NatsExecutable</connectorClass>
               <files>
                 <file>
-                  <templateId>io.camunda.connectors.inbound.KAFKA.v1</templateId>
+                  <templateId>io.camunda.connectors.inbound.NATS.StartEvent.v1</templateId>
                   <templateFileName>nats-inbound-connector-start-event.json</templateFileName>
-                </file>
-                <file>
-                  <templateId>io.camunda.connectors.inbound.NatsMessageStart.v1</templateId>
-                  <templateFileName>nats-inbound-connector-start-message.json</templateFileName>
-                </file>
-                <file>
-                  <templateId>io.camunda.connectors.inbound.NatsIntermediate.v1</templateId>
-                  <templateFileName>nats-inbound-connector-intermediate.json</templateFileName>
-                </file>
-                <file>
-                  <templateId>io.camunda.connectors.inbound.NatsBoundary.v1</templateId>
-                  <templateFileName>nats-inbound-connector-boundary.json</templateFileName>
                 </file>
               </files>
               <generateHybridTemplates>true</generateHybridTemplates>
