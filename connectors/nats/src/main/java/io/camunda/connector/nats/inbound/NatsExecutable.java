@@ -4,6 +4,7 @@ import io.camunda.connector.api.annotation.InboundConnector;
 import io.camunda.connector.api.inbound.Health;
 import io.camunda.connector.api.inbound.InboundConnectorContext;
 import io.camunda.connector.api.inbound.InboundConnectorExecutable;
+import io.nats.client.JetStreamSubscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,15 +25,11 @@ public class NatsExecutable implements InboundConnectorExecutable<InboundConnect
         this.consumerCreatorFunction = consumerCreatorFunction;
     }
 
-    public NatsExecutable() {
-        this(NatsConsumer::new);
-    }
-
     @Override
     public void activate(InboundConnectorContext connectorContext) {
         try {
-            KafkaConnectorProperties elementProps =
-                    connectorContext.bindProperties(KafkaConnectorProperties.class);
+            NatsConnectorProperties elementProps =
+                    connectorContext.bindProperties(NatsConnectorProperties.class);
             this.natsConnectorConsumer =
                     new NatsConnectorConsumer(consumerCreatorFunction, connectorContext, elementProps);
             this.natsConnectorConsumer.startConsumer();
