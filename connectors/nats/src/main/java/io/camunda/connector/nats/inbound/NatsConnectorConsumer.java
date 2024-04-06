@@ -1,6 +1,7 @@
 package io.camunda.connector.nats.inbound;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +35,6 @@ public class NatsConnectorConsumer {
     public CompletableFuture<?> future;
 
     private Connection connection;
-    private JetStream jetStream;
     private JetStreamSubscription jetStreamSubscription;
 
     NatsConnectorProperties elementProps;
@@ -100,9 +100,10 @@ public class NatsConnectorConsumer {
 
         try (Connection nc = Nats.connect(builder.build())) {
             this.connection = nc;
-            this.jetStream = nc.jetStream();
-            // Polling not streaming
-            this.jetStreamSubscription = this.jetStream.subscribe(elementProps.subject);
+            JetStream jetStream = nc.jetStream();
+            // TODO: streaming
+            // NOTE: This is for polling
+            this.jetStreamSubscription = jetStream.subscribe(elementProps.subject);
             reportUp();
         } catch (Exception ex) {
             LOG.error("Failed to initialize connector: {}", ex.getMessage());
@@ -122,9 +123,7 @@ public class NatsConnectorConsumer {
                 reportUp();
             } catch (Exception ex) {
                 reportDown(ex);
-                if (ex instanceof OffsetOutOfRangeException) {
-                    throw ex;
-                }
+                throw ex;
             }
         }
         LOG.debug("Kafka inbound loop finished");
@@ -142,10 +141,13 @@ public class NatsConnectorConsumer {
     }
 
     private void handleMessage(Message message) {
-        LOG.trace("NATS message received: subject = {}, value = {}", message.getSubject(), message.getData());
-        String messageData = new String(message.getData(), StandardCharsets.UTF_8);
-        var mappedMessage = objectMapper.readTree(messageData);
-        this.context.correlate(mappedMessage);
+        LOG.trace("NATS message received: subject = {}, value = {}", message.getSubject(), new String(message.getData(), StandardCharsets.UTF_8));
+        try {
+            NatsInboundMessage mappedMessage = new NatsInboundMessage(message.getConnection().getConnectedUrl(), message.getSubject(), new String(message.getData(), StandardCharsets.UTF_8));
+            this.context.correlateWithResult(mappedMessage);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void stopConsumer() throws ExecutionException, InterruptedException {
