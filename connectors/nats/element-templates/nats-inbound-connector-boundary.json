@@ -46,7 +46,7 @@
     {
       "id": "authentication.type",
       "label": "Authentication type",
-      "description": "username/password or token or jwt/nkey",
+      "description": "Select the type of authentication to use for the connection",
       "optional": false,
       "value": "NONE",
       "constraints": {
@@ -144,7 +144,7 @@
     {
       "id": "authentication.nkey",
       "label": "NKey seed",
-      "description": "If a seed is provided, the public key, and signature are calculated.",
+      "description": "If a seed is provided, the public key, and signature are calculated",
       "group": "authentication",
       "type": "String",
       "optional": true,

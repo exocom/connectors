@@ -76,6 +76,7 @@
       },
       "type": "String"
     },
+
     {
       "id": "serializationType",
       "label": "Serialization type",
@@ -157,6 +158,7 @@
       },
       "type": "String"
     },
+
     {
       "id": "message.key",
       "label": "Key",
@@ -189,6 +191,7 @@
       },
       "type": "String"
     },
+
     {
       "id": "avro.schema",
       "label": "Avro schema",
@@ -210,6 +213,7 @@
       },
       "type": "Text"
     },
+
     {
       "id": "resultVariable",
       "label": "Result variable",
