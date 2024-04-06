@@ -65,7 +65,7 @@
         },
         {
           "name": "username/password",
-          "value": "credentials"
+          "value": "username_password"
         },
         {
           "name": "token",
@@ -90,7 +90,7 @@
       },
       "condition": {
         "property": "authentication.type",
-        "equals": "credentials"
+        "equals": "username_password"
       }
     },
     {
@@ -106,7 +106,7 @@
       },
       "condition": {
         "property": "authentication.type",
-        "equals": "credentials"
+        "equals": "username_password"
       }
     },
     {

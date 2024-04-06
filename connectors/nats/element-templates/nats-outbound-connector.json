@@ -67,7 +67,7 @@
         },
         {
           "name": "username/password",
-          "value": "credentials"
+          "value": "username_password"
         },
         {
           "name": "token",
@@ -92,7 +92,7 @@
       },
       "condition": {
         "property": "authentication.type",
-        "equals": "credentials"
+        "equals": "username_password"
       }
     },
     {
@@ -108,7 +108,7 @@
       },
       "condition": {
         "property": "authentication.type",
-        "equals": "credentials"
+        "equals": "username_password"
       }
     },
     {
@@ -159,7 +159,6 @@
         "equals": "jwt"
       }
     },
-
     {
       "label": "Servers",
       "description": "Comma-separated list of NATS servers (e.g., nats://localhost:4222)",
@@ -187,7 +186,6 @@
         "notEmpty": true
       }
     },
-
     {
       "id": "message",
       "label": "Message",
@@ -204,7 +202,6 @@
       },
       "type": "String"
     },
-
     {
       "id": "resultVariable",
       "label": "Result variable",

@@ -1,72 +1,80 @@
 package io.camunda.connector.nats.inbound;
 
-import io.camunda.connector.api.annotation.Secret;
 import io.camunda.connector.feel.annotation.FEEL;
 import io.camunda.connector.generator.java.annotation.TemplateProperty;
+import io.camunda.connector.nats.model.NatsAuthentication;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
 import java.util.Map;
 
 public class NatsConnectorProperties {
+    @Valid
+    @NotNull
+    NatsAuthentication authentication;
+
+    @FEEL
     @NotEmpty
     @TemplateProperty(
-            label = "Servers",
-            description = "Comma-separated list of NATS servers (e.g., nats://localhost:4222)",
-            group = "nats",
-            type = TemplateProperty.PropertyType.Text)
-    private String servers;
+        group = "nats",
+        label = "Servers",
+        description = "Provide connection server(s), comma-delimited if there are multiple")
+    String servers;
 
     @NotEmpty
-    @TemplateProperty(label = "Subject", description = "NATS subject to subscribe to", group = "nats")
-    private String subject;
+    @TemplateProperty(
+        group = "nats",
+        label = "Subject",
+        description = "NATS subject to subscribe to")
+    String subject;
 
     @TemplateProperty(
-            label = "Queue Group",
-            description = "Optional queue group name for load balancing",
-            group = "nats",
-            optional = true)
+        label = "Queue Group",
+        description = "Optional queue group name for load balancing",
+        group = "nats",
+        optional = true)
     private String queueGroup;
 
     @TemplateProperty(
-            label = "Durable Name",
-            description = "Optional durable name for consumer",
-            group = "nats",
-            optional = true)
+        label = "Durable Name",
+        description = "Optional durable name for consumer",
+        group = "nats",
+        optional = true)
     private String durableName;
 
     @FEEL
     @TemplateProperty(
-            label = "Additional options",
-            description = "Provide additional NATS consumer options in JSON",
-            group = "nats",
-            optional = true,
-            feel = TemplateProperty.FeelMode.required)
+        label = "Additional options",
+        description = "Provide additional NATS consumer options in JSON",
+        group = "nats",
+        optional = false)
     private Map<String, Object> additionalOptions;
 
     @FEEL
     @TemplateProperty(
-            label = "Activation condition",
-            description = "Condition under which the connector triggers. Leave empty to catch all events",
-            group = "activation",
-            optional = true,
-            feel = TemplateProperty.FeelMode.required)
+        label = "Activation condition",
+        description = "Condition under which the connector triggers. Leave empty to catch all events",
+        group = "activation",
+        optional = false
+    )
     private String activationCondition;
 
     @TemplateProperty(
-            label = "Result variable",
-            description = "Name of variable to store the result of the connector in",
-            group = "variable-mapping",
-            optional = true)
+        label = "Result variable",
+        description = "Name of variable to store the result of the connector in",
+        group = "variable-mapping",
+        optional = true)
     private String resultVariable;
 
     @FEEL
     @TemplateProperty(
-            label = "Result expression",
-            description = "Expression to map the inbound payload to process variables",
-            group = "variable-mapping",
-            type = TemplateProperty.PropertyType.Text,
-            feel = TemplateProperty.FeelMode.required)
+        label = "Result expression",
+        description = "Expression to map the inbound payload to process variables",
+        group = "variable-mapping",
+        optional = false,
+        type = TemplateProperty.PropertyType.Text
+    )
     private String resultExpression;
-
-    // Getters and setters for all properties
-
 }

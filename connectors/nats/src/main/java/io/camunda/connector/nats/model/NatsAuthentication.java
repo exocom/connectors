@@ -5,13 +5,13 @@ import io.camunda.connector.generator.java.annotation.TemplateProperty;
 public record NatsAuthentication(
     @TemplateProperty(
         label = "Authentication type",
-        description = "username/password or token or jwt/nkey",
+        description = "Select the type of authentication to use for the connection",
         group = "authentication",
         type = TemplateProperty.PropertyType.Dropdown,
         defaultValue = "NONE",
         choices = {
-            @TemplateProperty.DropdownPropertyChoice(label = "None", value = "NONE"),
-            @TemplateProperty.DropdownPropertyChoice(label = "username/password", value = "credentials"),
+            @TemplateProperty.DropdownPropertyChoice(label = "None", value = "none"),
+            @TemplateProperty.DropdownPropertyChoice(label = "username/password", value = "username_password"),
             @TemplateProperty.DropdownPropertyChoice(label = "token", value = "token"),
             @TemplateProperty.DropdownPropertyChoice(label = "jwt/nkey", value = "jwt")
         }
@@ -23,7 +23,7 @@ public record NatsAuthentication(
         description = "Provide the username (must have permissions to subscribe to the topic)",
         group = "authentication",
         optional = true,
-        condition = @TemplateProperty.PropertyCondition(property = "authenticationType", equals = "credentials"))
+        condition = @TemplateProperty.PropertyCondition(property = "authenticationType", equals = "username_password"))
     String username,
 
     @TemplateProperty(
@@ -31,7 +31,7 @@ public record NatsAuthentication(
         description = "Provide a password for the user",
         group = "authentication",
         optional = true,
-        condition = @TemplateProperty.PropertyCondition(property = "authenticationType", equals = "credentials"))
+        condition = @TemplateProperty.PropertyCondition(property = "authenticationType", equals = "username_password"))
     String password,
 
     @TemplateProperty(
@@ -52,16 +52,16 @@ public record NatsAuthentication(
 
     @TemplateProperty(
         label = "NKey seed",
-        description = "If a seed is provided, the public key, and signature are calculated.",
+        description = "If a seed is provided, the public key, and signature are calculated",
         group = "authentication",
         type = TemplateProperty.PropertyType.String,
         optional = true,
         condition = @TemplateProperty.PropertyCondition(property = "authenticationType", equals = "jwt"))
-    String nkeySeed
+    String nKeySeed
 
 ) {
   @Override
   public String toString() {
-    return "NatsAuthentication{type='" + this.type + "', username='[REDACTED]', password='[REDACTED]', token='[REDACTED]', jwt='[REDACTED]', nkeySeed='[REDACTED]'}";
+    return "NatsAuthentication{type='" + this.type + "', username='[REDACTED]', password='[REDACTED]', token='[REDACTED]', jwt='[REDACTED]', nKeySeed='[REDACTED]'}";
   }
 }
