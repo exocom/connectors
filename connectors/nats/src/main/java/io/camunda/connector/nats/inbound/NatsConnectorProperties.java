@@ -7,13 +7,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
 import java.util.Map;
 
-public class NatsConnectorProperties {
+public record NatsConnectorProperties (
     @Valid
     @NotNull
-    NatsAuthentication authentication;
+    NatsAuthentication authentication,
 
     @FEEL
     @NotEmpty
@@ -21,28 +20,28 @@ public class NatsConnectorProperties {
         group = "nats",
         label = "Servers",
         description = "Provide connection server(s), comma-delimited if there are multiple")
-    String servers;
+    String servers,
 
     @NotEmpty
     @TemplateProperty(
         group = "nats",
         label = "Subject",
         description = "NATS subject to subscribe to")
-    String subject;
+    String subject,
 
     @TemplateProperty(
         label = "Queue Group",
         description = "Optional queue group name for load balancing",
         group = "nats",
         optional = true)
-    private String queueGroup;
+    String queueGroup,
 
     @TemplateProperty(
         label = "Durable Name",
         description = "Optional durable name for consumer",
         group = "nats",
         optional = true)
-    private String durableName;
+    String durableName,
 
     @FEEL
     @TemplateProperty(
@@ -50,7 +49,7 @@ public class NatsConnectorProperties {
         description = "Provide additional NATS consumer options in JSON",
         group = "nats",
         optional = false)
-    private Map<String, Object> additionalOptions;
+    Map<String, Object> additionalOptions,
 
     @FEEL
     @TemplateProperty(
@@ -59,14 +58,14 @@ public class NatsConnectorProperties {
         group = "activation",
         optional = false
     )
-    private String activationCondition;
+    String activationCondition,
 
     @TemplateProperty(
         label = "Result variable",
         description = "Name of variable to store the result of the connector in",
         group = "variable-mapping",
         optional = true)
-    private String resultVariable;
+    String resultVariable,
 
     @FEEL
     @TemplateProperty(
@@ -76,5 +75,5 @@ public class NatsConnectorProperties {
         optional = false,
         type = TemplateProperty.PropertyType.Text
     )
-    private String resultExpression;
+    String resultExpression) {
 }

@@ -76,12 +76,12 @@ public class NatsConnectorConsumer {
 
     private void prepareConsumer() {
         Options.Builder builder = new Options.Builder();
-        builder.server(elementProps.servers);
+        builder.server(elementProps.servers());
 
-        switch (elementProps.authentication.type()) {
+        switch (elementProps.authentication().type()) {
             case USERNAME_PASSWORD ->
-                builder.userInfo(elementProps.authentication.username(), elementProps.authentication.password());
-            case TOKEN -> builder.token(elementProps.authentication.token().toCharArray());
+                builder.userInfo(elementProps.authentication().username(), elementProps.authentication().password());
+            case TOKEN -> builder.token(elementProps.authentication().token().toCharArray());
             case JWT -> builder.authHandler(new AuthHandler() {
                 @Override
                 public byte[] sign(byte[] bytes) {
@@ -89,11 +89,11 @@ public class NatsConnectorConsumer {
                 }
 
                 public char[] getID() {
-                    return elementProps.authentication.nKeySeed().toCharArray();
+                    return elementProps.authentication().nKeySeed().toCharArray();
                 }
 
                 public char[] getJWT() {
-                    return elementProps.authentication.jwt().toCharArray();
+                    return elementProps.authentication().jwt().toCharArray();
                 }
             });
         }
@@ -103,7 +103,7 @@ public class NatsConnectorConsumer {
             JetStream jetStream = nc.jetStream();
             // TODO: streaming
             // NOTE: This is for polling
-            this.jetStreamSubscription = jetStream.subscribe(elementProps.subject);
+            this.jetStreamSubscription = jetStream.subscribe(elementProps.subject());
             reportUp();
         } catch (Exception ex) {
             LOG.error("Failed to initialize connector: {}", ex.getMessage());
