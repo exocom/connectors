@@ -114,6 +114,7 @@ limitations under the License.</license.inlineheader>
     <version.kafka-clients>3.7.0</version.kafka-clients>
 
     <version.jnats>2.17.3</version.jnats>
+    <version.jnats-server-runner>1.2.8</version.jnats-server-runner>
 
     <version.microsoft-graph>6.5.0</version.microsoft-graph>
     <version.azure-identity>1.11.4</version.azure-identity>
@@ -394,6 +395,12 @@ limitations under the License.</license.inlineheader>
         <groupId>io.nats</groupId>
         <artifactId>jnats</artifactId>
         <version>${version.jnats}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.nats</groupId>
+        <artifactId>jnats-server-runner</artifactId>
+        <version>${version.jnats-server-runner}</version>
       </dependency>
 
       <dependency>
