@@ -38,7 +38,7 @@
     "label" : "Authentication type",
     "description" : "Select the type of authentication to use for the connection",
     "optional" : false,
-    "value" : "NONE",
+    "value" : "none",
     "constraints" : {
       "notEmpty" : true
     },
@@ -88,7 +88,7 @@
       "type" : "zeebe:property"
     },
     "condition" : {
-      "property" : "authenticationType",
+      "property" : "authentication.type",
       "equals" : "username_password",
       "type" : "simple"
     },
@@ -104,7 +104,7 @@
       "type" : "zeebe:property"
     },
     "condition" : {
-      "property" : "authenticationType",
+      "property" : "authentication.type",
       "equals" : "token",
       "type" : "simple"
     },
@@ -120,7 +120,7 @@
       "type" : "zeebe:property"
     },
     "condition" : {
-      "property" : "authenticationType",
+      "property" : "authentication.type",
       "equals" : "jwt",
       "type" : "simple"
     },
@@ -136,7 +136,7 @@
       "type" : "zeebe:property"
     },
     "condition" : {
-      "property" : "authenticationType",
+      "property" : "authentication.type",
       "equals" : "jwt",
       "type" : "simple"
     },

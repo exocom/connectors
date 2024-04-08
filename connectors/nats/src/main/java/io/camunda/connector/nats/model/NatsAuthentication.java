@@ -16,7 +16,7 @@ public record NatsAuthentication(
             description = "Select the type of authentication to use for the connection",
             group = "authentication",
             type = TemplateProperty.PropertyType.Dropdown,
-            defaultValue = "NONE",
+            defaultValue = "none",
             choices = {
               @TemplateProperty.DropdownPropertyChoice(label = "None", value = "none"),
               @TemplateProperty.DropdownPropertyChoice(
@@ -43,7 +43,7 @@ public record NatsAuthentication(
             optional = true,
             condition =
                 @TemplateProperty.PropertyCondition(
-                    property = "authenticationType",
+                    property = "authentication.type",
                     equals = "username_password"))
         String password,
     @TemplateProperty(
@@ -53,7 +53,7 @@ public record NatsAuthentication(
             optional = true,
             condition =
                 @TemplateProperty.PropertyCondition(
-                    property = "authenticationType",
+                    property = "authentication.type",
                     equals = "token"))
         String token,
     @TemplateProperty(
@@ -63,7 +63,7 @@ public record NatsAuthentication(
             optional = true,
             condition =
                 @TemplateProperty.PropertyCondition(
-                    property = "authenticationType",
+                    property = "authentication.type",
                     equals = "jwt"))
         String jwt,
     @TemplateProperty(
@@ -74,7 +74,7 @@ public record NatsAuthentication(
             optional = true,
             condition =
                 @TemplateProperty.PropertyCondition(
-                    property = "authenticationType",
+                    property = "authentication.type",
                     equals = "jwt"))
         String nKeySeed) {
 
