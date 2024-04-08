@@ -19,14 +19,17 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
 import io.camunda.connector.api.inbound.Health;
 import io.camunda.connector.api.inbound.InboundConnectorContext;
 import io.nats.client.*;
+import io.nats.client.support.SSLUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.net.ssl.SSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,28 +82,44 @@ public class NatsConnectorConsumer {
   }
 
   private void prepareConsumer() {
-    Options.Builder builder = new Options.Builder();
-    builder.server(elementProps.servers());
+    SSLContext ctx = null;
+    try {
+      ctx = SSLUtils.createTrustAllTlsContext();
+    } catch (GeneralSecurityException e) {
+      throw new RuntimeException(e);
+    }
+
+    Options.Builder builder = new Options.Builder().server(elementProps.servers()).sslContext(ctx);
 
     switch (elementProps.authentication().type()) {
       case USERNAME_PASSWORD -> builder.userInfo(
           elementProps.authentication().username(), elementProps.authentication().password());
       case TOKEN -> builder.token(elementProps.authentication().token().toCharArray());
-      case JWT -> builder.authHandler(
-          new AuthHandler() {
-            @Override
-            public byte[] sign(byte[] bytes) {
-              return new byte[0];
-            }
+      case JWT -> {
+        NKey nKey = NKey.fromSeed(elementProps.authentication().nKeySeed().toCharArray());
+        builder.authHandler(
+            new AuthHandler() {
+              public char[] getID() {
+                try {
+                  return nKey.getPublicKey();
+                } catch (GeneralSecurityException | IOException | NullPointerException ex) {
+                  return null;
+                }
+              }
 
-            public char[] getID() {
-              return elementProps.authentication().nKeySeed().toCharArray();
-            }
+              public byte[] sign(byte[] nonce) {
+                try {
+                  return nKey.sign(nonce);
+                } catch (GeneralSecurityException | IOException | NullPointerException ex) {
+                  return null;
+                }
+              }
 
-            public char[] getJWT() {
-              return elementProps.authentication().jwt().toCharArray();
-            }
-          });
+              public char[] getJWT() {
+                return elementProps.authentication().jwt().toCharArray();
+              }
+            });
+      }
     }
 
     try (Connection nc = Nats.connect(builder.build())) {
