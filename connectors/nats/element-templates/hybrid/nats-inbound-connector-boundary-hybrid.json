@@ -15,6 +15,9 @@
     "eventDefinition" : "bpmn:MessageEventDefinition"
   },
   "groups" : [ {
+    "id" : "connectorType",
+    "label" : "Connector type"
+  }, {
     "id" : "authentication",
     "label" : "Authentication"
   }, {
@@ -31,12 +34,14 @@
     "label" : "Output mapping"
   } ],
   "properties" : [ {
+    "id" : "connectorType",
     "value" : "io.camunda:connector-nats-inbound:1",
+    "group" : "connectorType",
     "binding" : {
       "name" : "inbound.type",
       "type" : "zeebe:property"
     },
-    "type" : "Hidden"
+    "type" : "String"
   }, {
     "id" : "authentication.type",
     "label" : "Authentication type",

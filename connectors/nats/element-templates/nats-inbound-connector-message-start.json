@@ -1,269 +1,325 @@
 {
-  "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
-  "name": "NATS Start Event Connector",
-  "id": "io.camunda.connectors.inbound.NATS.MessageStart.v1",
-  "version": 1,
-  "description": "Listen for events on NATS topic and start process when event arrives",
-  "documentationRef": "https://docs.nats.io/",
-  "category": {
-    "id": "connectors",
-    "name": "Connectors"
+  "$schema" : "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
+  "name" : "NATS Message Start Event Connector",
+  "id" : "io.camunda.connectors.inbound.NATS.MessageStart.v1",
+  "description" : "Consume NATS messages",
+  "documentationRef" : "https://docs.nats.io/",
+  "version" : 1,
+  "category" : {
+    "id" : "connectors",
+    "name" : "Connectors"
   },
-  "appliesTo": [
-    "bpmn:StartEvent"
-  ],
-  "elementType": {
-    "value": "bpmn:StartEvent",
-    "eventDefinition": "bpmn:MessageEventDefinition"
+  "appliesTo" : [ "bpmn:StartEvent" ],
+  "elementType" : {
+    "value" : "bpmn:StartEvent",
+    "eventDefinition" : "bpmn:MessageEventDefinition"
   },
-  "groups": [
-    {
-      "id": "authentication",
-      "label": "Authentication"
+  "groups" : [ {
+    "id" : "authentication",
+    "label" : "Authentication"
+  }, {
+    "id" : "nats",
+    "label" : "NATS"
+  }, {
+    "id" : "activation",
+    "label" : "Activation"
+  }, {
+    "id" : "correlation",
+    "label" : "Correlation"
+  }, {
+    "id" : "output",
+    "label" : "Output mapping"
+  } ],
+  "properties" : [ {
+    "value" : "io.camunda:connector-nats-inbound:1",
+    "binding" : {
+      "name" : "inbound.type",
+      "type" : "zeebe:property"
     },
-    {
-      "id": "nats",
-      "label": "NATS"
+    "type" : "Hidden"
+  }, {
+    "id" : "authentication.type",
+    "label" : "Authentication type",
+    "description" : "Select the type of authentication to use for the connection",
+    "optional" : false,
+    "value" : "NONE",
+    "constraints" : {
+      "notEmpty" : true
     },
-    {
-      "id": "activation",
-      "label": "Activation"
+    "group" : "authentication",
+    "binding" : {
+      "name" : "authentication.type",
+      "type" : "zeebe:property"
     },
-    {
-      "id": "variable-mapping",
-      "label": "Variable mapping"
-    }
-  ],
-  "properties": [
-    {
-      "type": "Hidden",
-      "value": "io.camunda:connector-nats-inbound:1",
-      "binding": {
-        "type": "zeebe:property",
-        "name": "inbound.type"
-      }
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "None",
+      "value" : "none"
+    }, {
+      "name" : "username/password",
+      "value" : "username_password"
+    }, {
+      "name" : "token",
+      "value" : "token"
+    }, {
+      "name" : "jwt/nkey",
+      "value" : "jwt"
+    } ]
+  }, {
+    "id" : "authentication.username",
+    "label" : "Username",
+    "description" : "Provide the username (must have permissions to subscribe to the topic)",
+    "optional" : true,
+    "group" : "authentication",
+    "binding" : {
+      "name" : "authentication.username",
+      "type" : "zeebe:property"
     },
-    {
-      "id": "authentication.type",
-      "label": "Authentication type",
-      "description": "Select the type of authentication to use for the connection",
-      "optional": false,
-      "value": "NONE",
-      "constraints": {
-        "notEmpty": true
-      },
-      "group": "authentication",
-      "binding": {
-        "name": "authentication.type",
-        "type": "zeebe:property"
-      },
-      "type": "Dropdown",
-      "choices": [
-        {
-          "name": "None",
-          "value": "none"
-        },
-        {
-          "name": "username/password",
-          "value": "username_password"
-        },
-        {
-          "name": "token",
-          "value": "token"
-        },
-        {
-          "name": "jwt/nkey",
-          "value": "jwt"
-        }
-      ]
+    "condition" : {
+      "property" : "authentication.type",
+      "equals" : "username_password",
+      "type" : "simple"
     },
-    {
-      "id": "authentication.username",
-      "label": "Username",
-      "description": "Provide the username (must have permissions to subscribe to the topic)",
-      "optional": true,
-      "group": "authentication",
-      "type": "String",
-      "binding": {
-        "name": "authentication.username",
-        "type": "zeebe:property"
-      },
-      "condition": {
-        "property": "authentication.type",
-        "equals": "username_password"
-      }
+    "type" : "String"
+  }, {
+    "id" : "authentication.password",
+    "label" : "Password",
+    "description" : "Provide a password for the user",
+    "optional" : true,
+    "group" : "authentication",
+    "binding" : {
+      "name" : "authentication.password",
+      "type" : "zeebe:property"
     },
-    {
-      "id": "authentication.password",
-      "label": "Password",
-      "description": "Provide a password for the user",
-      "optional": true,
-      "group": "authentication",
-      "type": "String",
-      "binding": {
-        "name": "authentication.password",
-        "type": "zeebe:property"
-      },
-      "condition": {
-        "property": "authentication.type",
-        "equals": "username_password"
-      }
+    "condition" : {
+      "property" : "authenticationType",
+      "equals" : "username_password",
+      "type" : "simple"
     },
-    {
-      "id": "authentication.token",
-      "label": "Token",
-      "description": "Provide a token for authentication",
-      "optional": true,
-      "group": "authentication",
-      "type": "String",
-      "binding": {
-        "name": "authentication.token",
-        "type": "zeebe:property"
-      },
-      "condition": {
-        "property": "authentication.type",
-        "equals": "token"
-      }
+    "type" : "String"
+  }, {
+    "id" : "authentication.token",
+    "label" : "Token",
+    "description" : "Provide a token for authentication",
+    "optional" : true,
+    "group" : "authentication",
+    "binding" : {
+      "name" : "authentication.token",
+      "type" : "zeebe:property"
     },
-    {
-      "id": "authentication.jwt",
-      "label": "JWT",
-      "description": "user JWT for authentication",
-      "group": "authentication",
-      "type": "String",
-      "optional": true,
-      "binding": {
-        "type": "zeebe:input",
-        "name": "authentication.jwt"
-      },
-      "condition": {
-        "property": "authentication.type",
-        "equals": "jwt"
-      }
+    "condition" : {
+      "property" : "authenticationType",
+      "equals" : "token",
+      "type" : "simple"
     },
-    {
-      "id": "authentication.nkey",
-      "label": "NKey seed",
-      "description": "If a seed is provided, the public key, and signature are calculated",
-      "group": "authentication",
-      "type": "String",
-      "optional": true,
-      "binding": {
-        "type": "zeebe:input",
-        "name": "authentication.nkey"
-      },
-      "condition": {
-        "property": "authentication.type",
-        "equals": "jwt"
-      }
+    "type" : "String"
+  }, {
+    "id" : "authentication.jwt",
+    "label" : "JWT",
+    "description" : "user JWT for authentication",
+    "optional" : true,
+    "group" : "authentication",
+    "binding" : {
+      "name" : "authentication.jwt",
+      "type" : "zeebe:property"
     },
-    {
-      "type": "Hidden",
-      "generatedValue": {
-        "type": "uuid"
-      },
-      "binding": {
-        "type": "bpmn:Message#property",
-        "name": "name"
-      }
+    "condition" : {
+      "property" : "authenticationType",
+      "equals" : "jwt",
+      "type" : "simple"
     },
-    {
-      "label": "Servers",
-      "description": "Comma-separated list of NATS servers (e.g., nats://localhost:4222)",
-      "group": "nats",
-      "type": "String",
-      "feel": "optional",
-      "binding": {
-        "type": "zeebe:property",
-        "name": "servers"
-      },
-      "constraints": {
-        "notEmpty": true
-      }
+    "type" : "String"
+  }, {
+    "id" : "authentication.nKeySeed",
+    "label" : "NKey seed",
+    "description" : "If a seed is provided, the public key, and signature are calculated",
+    "optional" : true,
+    "group" : "authentication",
+    "binding" : {
+      "name" : "authentication.nKeySeed",
+      "type" : "zeebe:property"
     },
-    {
-      "label": "Subject",
-      "description": "NATS subject to subscribe to",
-      "group": "nats",
-      "type": "String",
-      "binding": {
-        "type": "zeebe:property",
-        "name": "subject"
-      },
-      "constraints": {
-        "notEmpty": true
-      }
+    "condition" : {
+      "property" : "authenticationType",
+      "equals" : "jwt",
+      "type" : "simple"
     },
-    {
-      "label": "Queue Group",
-      "description": "Optional queue group name for load balancing",
-      "group": "nats",
-      "type": "String",
-      "optional": true,
-      "binding": {
-        "type": "zeebe:property",
-        "name": "queueGroup"
-      }
+    "type" : "String"
+  }, {
+    "id" : "servers",
+    "label" : "Servers",
+    "description" : "Provide connection server(s), comma-delimited if there are multiple",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
     },
-    {
-      "label": "Durable Name",
-      "description": "Optional durable name for consumer",
-      "group": "nats",
-      "type": "String",
-      "optional": true,
-      "binding": {
-        "type": "zeebe:property",
-        "name": "durableName"
-      }
+    "group" : "nats",
+    "binding" : {
+      "name" : "servers",
+      "type" : "zeebe:property"
     },
-    {
-      "label": "Additional options",
-      "description": "Provide additional NATS consumer options in JSON",
-      "group": "nats",
-      "type": "String",
-      "optional": true,
-      "feel": "required",
-      "binding": {
-        "type": "zeebe:property",
-        "name": "additionalOptions"
-      }
+    "type" : "String"
+  }, {
+    "id" : "subject",
+    "label" : "Subject",
+    "description" : "NATS subject to subscribe to",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
     },
-    {
-      "label": "Activation condition",
-      "type": "String",
-      "group": "activation",
-      "feel": "required",
-      "optional": true,
-      "binding": {
-        "type": "zeebe:property",
-        "name": "activationCondition"
-      },
-      "description": "Condition under which the connector triggers. Leave empty to catch all events"
+    "group" : "nats",
+    "binding" : {
+      "name" : "subject",
+      "type" : "zeebe:property"
     },
-    {
-      "label": "Result variable",
-      "type": "String",
-      "group": "variable-mapping",
-      "optional": true,
-      "binding": {
-        "type": "zeebe:property",
-        "name": "resultVariable"
-      },
-      "description": "Name of variable to store the result of the connector in"
+    "type" : "String"
+  }, {
+    "id" : "queueGroup",
+    "label" : "Queue Group",
+    "description" : "Optional queue group name for load balancing",
+    "optional" : true,
+    "group" : "nats",
+    "binding" : {
+      "name" : "queueGroup",
+      "type" : "zeebe:property"
     },
-    {
-      "label": "Result expression",
-      "description": "Expression to map the inbound payload to process variables",
-      "group": "variable-mapping",
-      "type": "Text",
-      "feel": "required",
-      "binding": {
-        "type": "zeebe:property",
-        "name": "resultExpression"
-      }
-    }
-  ],
-  "icon": {
-    "contents": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18.609842' viewBox='0 0 18 18.609842' %3E%3Cstyle xml:space='preserve'%3Esvg %7Benable-background:new 0 0 288 288%7D%3C/style%3E%3Cstyle xml:space='preserve'%3E.st3%7Bfill:%23375c93%7D.st4%7Bfill:%238dc63f%7D%3C/style%3E%3Cpath fill='%2334a574' d='M 9.166904 0.34022826 h 8.646933 v 7.0099854 H 9.166904 z'/%3E%3Cpath fill='%2327aae1' d='M 0.5199715 0.34022826 h 8.646933 v 7.0099854 H 0.5199715 z'/%3E%3Cpath class='st4' d='M 9.166904 7.356633 h 8.646933 v 7.0099854 H 9.166904 z'/%3E%3Cpath class='st3' d='M 0.5199715 7.356633 h 8.646933 v 7.0099854 H 0.5199715 z'/%3E%3Cpath class='st4' d='M 7.895863 14.328102 l 4.2303853 3.9158344 v -3.9158344 z'/%3E%3Cpath class='st3' d='M 9.166904 14.328102 l 0.044935804 1.232525 l -1.3544936 -1.264622 z'/%3E%3Cpath fill='%23fff' d='M 12.74893 9.404422 V 3.6012838 h 2.067047 V 11.105563 H 11.68331 L 5.3601995 5.1997147 v 5.912268 H 3.2867332 v -7.510699 h 3.2417974 l 6.2203994 5.8031383 z'/%3E%3C/svg%3E"
+    "type" : "String"
+  }, {
+    "id" : "durableName",
+    "label" : "Durable Name",
+    "description" : "Optional durable name for consumer",
+    "optional" : true,
+    "group" : "nats",
+    "binding" : {
+      "name" : "durableName",
+      "type" : "zeebe:property"
+    },
+    "type" : "String"
+  }, {
+    "id" : "additionalOptions",
+    "label" : "Additional options",
+    "description" : "Provide additional NATS consumer options in JSON",
+    "optional" : false,
+    "group" : "nats",
+    "binding" : {
+      "name" : "additionalOptions",
+      "type" : "zeebe:property"
+    },
+    "type" : "String"
+  }, {
+    "id" : "activationCondition",
+    "label" : "Activation condition",
+    "description" : "Condition under which the Connector triggers. Leave empty to catch all events",
+    "optional" : true,
+    "feel" : "required",
+    "group" : "activation",
+    "binding" : {
+      "name" : "activationCondition",
+      "type" : "zeebe:property"
+    },
+    "type" : "String"
+  }, {
+    "id" : "correlationRequired",
+    "label" : "Subprocess correlation required",
+    "description" : "Indicates whether correlation is required. This is needed for event-based subprocess message start events",
+    "value" : "notRequired",
+    "group" : "correlation",
+    "binding" : {
+      "name" : "correlationRequired",
+      "type" : "zeebe:property"
+    },
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "Correlation not required",
+      "value" : "notRequired"
+    }, {
+      "name" : "Correlation required",
+      "value" : "required"
+    } ]
+  }, {
+    "id" : "correlationKeyProcess",
+    "label" : "Correlation key (process)",
+    "description" : "Sets up the correlation key from process variables",
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "required",
+    "group" : "correlation",
+    "binding" : {
+      "name" : "correlationKey",
+      "type" : "bpmn:Message#zeebe:subscription#property"
+    },
+    "condition" : {
+      "property" : "correlationRequired",
+      "equals" : "required",
+      "type" : "simple"
+    },
+    "type" : "String"
+  }, {
+    "id" : "correlationKeyPayload",
+    "label" : "Correlation key (payload)",
+    "description" : "Extracts the correlation key from the incoming message payload",
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "required",
+    "group" : "correlation",
+    "binding" : {
+      "name" : "correlationKeyExpression",
+      "type" : "zeebe:property"
+    },
+    "condition" : {
+      "property" : "correlationRequired",
+      "equals" : "required",
+      "type" : "simple"
+    },
+    "type" : "String"
+  }, {
+    "id" : "messageIdExpression",
+    "label" : "Message ID expression",
+    "description" : "Expression to extract unique identifier of a message",
+    "optional" : true,
+    "feel" : "required",
+    "group" : "correlation",
+    "binding" : {
+      "name" : "messageIdExpression",
+      "type" : "zeebe:property"
+    },
+    "type" : "String"
+  }, {
+    "id" : "messageNameUuid",
+    "generatedValue" : {
+      "type" : "uuid"
+    },
+    "group" : "correlation",
+    "binding" : {
+      "name" : "name",
+      "type" : "bpmn:Message#property"
+    },
+    "type" : "Hidden"
+  }, {
+    "id" : "resultVariable",
+    "label" : "Result variable",
+    "description" : "Name of variable to store the response in",
+    "group" : "output",
+    "binding" : {
+      "name" : "resultVariable",
+      "type" : "zeebe:property"
+    },
+    "type" : "String"
+  }, {
+    "id" : "resultExpression",
+    "label" : "Result expression",
+    "description" : "Expression to map the response into process variables",
+    "feel" : "required",
+    "group" : "output",
+    "binding" : {
+      "name" : "resultExpression",
+      "type" : "zeebe:property"
+    },
+    "type" : "Text"
+  } ],
+  "icon" : {
+    "contents" : "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxOCcgaGVpZ2h0PScxOC42MDk4NDInIHZpZXdCb3g9JzAgMCAxOCAxOC42MDk4NDInPgogICAgPHN0eWxlIHhtbDpzcGFjZT0ncHJlc2VydmUnPnN2ZyB7ZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCAyODggMjg4fTwvc3R5bGU+CiAgICA8c3R5bGUgeG1sOnNwYWNlPSdwcmVzZXJ2ZSc+LnN0M3tmaWxsOiMzNzVjOTN9LnN0NHtmaWxsOiM4ZGM2M2Z9PC9zdHlsZT4KICAgIDxwYXRoIGZpbGw9JyMzNGE1NzQnIGQ9J00gOS4xNjY5MDQgMC4zNDAyMjgyNiBoIDguNjQ2OTMzIHYgNy4wMDk5ODU0IEggOS4xNjY5MDQgeicvPgogICAgPHBhdGggZmlsbD0nIzI3YWFlMScgZD0nTSAwLjUxOTk3MTUgMC4zNDAyMjgyNiBoIDguNjQ2OTMzIHYgNy4wMDk5ODU0IEggMC41MTk5NzE1IHonLz4KICAgIDxwYXRoIGNsYXNzPSdzdDQnIGQ9J00gOS4xNjY5MDQgNy4zNTY2MzMgaCA4LjY0NjkzMyB2IDcuMDA5OTg1NCBIIDkuMTY2OTA0IHonLz4KICAgIDxwYXRoIGNsYXNzPSdzdDMnIGQ9J00gMC41MTk5NzE1IDcuMzU2NjMzIGggOC42NDY5MzMgdiA3LjAwOTk4NTQgSCAwLjUxOTk3MTUgeicvPgogICAgPHBhdGggY2xhc3M9J3N0NCcgZD0nTSA3Ljg5NTg2MyAxNC4zMjgxMDIgbCA0LjIzMDM4NTMgMy45MTU4MzQ0IHYgLTMuOTE1ODM0NCB6Jy8+CiAgICA8cGF0aCBjbGFzcz0nc3QzJyBkPSdNIDkuMTY2OTA0IDE0LjMyODEwMiBsIDAuMDQ0OTM1ODA0IDEuMjMyNTI1IGwgLTEuMzU0NDkzNiAtMS4yNjQ2MjIgeicvPgogICAgPHBhdGggZmlsbD0nI2ZmZicKICAgICAgICAgIGQ9J00gMTIuNzQ4OTMgOS40MDQ0MjIgViAzLjYwMTI4MzggaCAyLjA2NzA0NyBWIDExLjEwNTU2MyBIIDExLjY4MzMxIEwgNS4zNjAxOTk1IDUuMTk5NzE0NyB2IDUuOTEyMjY4IEggMy4yODY3MzMyIHYgLTcuNTEwNjk5IGggMy4yNDE3OTc0IGwgNi4yMjAzOTk0IDUuODAzMTM4MyB6Jy8+Cjwvc3ZnPg=="
   }
 }
