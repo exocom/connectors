@@ -87,6 +87,18 @@
                   <templateId>io.camunda.connectors.inbound.NATS.StartEvent.v1</templateId>
                   <templateFileName>nats-inbound-connector-start-event.json</templateFileName>
                 </file>
+                <file>
+                  <templateId>io.camunda.connectors.inbound.NATS.MessageStart.v1</templateId>
+                  <templateFileName>nats-inbound-connector-message-start.json</templateFileName>
+                </file>
+                <file>
+                  <templateId>io.camunda.connectors.inbound.NATS.Intermediate.v1</templateId>
+                  <templateFileName>nats-inbound-connector-intermediate.json</templateFileName>
+                </file>
+                <file>
+                  <templateId>io.camunda.connectors.inbound.NATS.Boundary.v1</templateId>
+                  <templateFileName>nats-inbound-connector-boundary.json</templateFileName>
+                </file>
               </files>
               <generateHybridTemplates>true</generateHybridTemplates>
             </connector>
