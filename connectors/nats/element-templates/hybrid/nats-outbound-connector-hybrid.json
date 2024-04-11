@@ -13,6 +13,9 @@
     "value" : "bpmn:ServiceTask"
   },
   "groups" : [ {
+    "id" : "taskDefinitionType",
+    "label" : "Task definition type"
+  }, {
     "id" : "authentication",
     "label" : "Authentication"
   }, {
@@ -32,12 +35,14 @@
     "label" : "Retries"
   } ],
   "properties" : [ {
+    "id" : "taskDefinitionType",
     "value" : "io.camunda:connector-nats:1",
+    "group" : "taskDefinitionType",
     "binding" : {
       "property" : "type",
       "type" : "zeebe:taskDefinition"
     },
-    "type" : "Hidden"
+    "type" : "String"
   }, {
     "id" : "authentication.type",
     "label" : "Authentication type",
@@ -175,6 +180,25 @@
       "type" : "zeebe:input"
     },
     "type" : "String"
+  }, {
+    "id" : "clientType",
+    "label" : "Client type",
+    "description" : "Select the type of client to use for the connection",
+    "optional" : false,
+    "value" : "nats",
+    "group" : "nats",
+    "binding" : {
+      "name" : "clientType",
+      "type" : "zeebe:input"
+    },
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "NATS",
+      "value" : "nats"
+    }, {
+      "name" : "JetStream",
+      "value" : "jetStream"
+    } ]
   }, {
     "id" : "subject",
     "label" : "Subject",

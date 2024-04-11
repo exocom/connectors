@@ -80,6 +80,16 @@
         <artifactId>element-template-generator-maven-plugin</artifactId>
         <configuration>
           <connectors>
+          <connector>
+              <connectorClass>io.camunda.connector.nats.outbound.NatsConnectorFunction</connectorClass>
+              <files>
+                <file>
+                  <templateId>io.camunda.connectors.NATS.v1</templateId>
+                  <templateFileName>nats-outbound-connector.json</templateFileName>
+                </file>
+              </files>
+              <generateHybridTemplates>true</generateHybridTemplates>
+            </connector>
             <connector>
               <connectorClass>io.camunda.connector.nats.inbound.NatsExecutable</connectorClass>
               <files>
