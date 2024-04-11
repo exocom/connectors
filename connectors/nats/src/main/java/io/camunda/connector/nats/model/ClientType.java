@@ -4,6 +4,13 @@
  * See the License.txt file for more information. You may not use this file
  * except in compliance with the proprietary license.
  */
-package io.camunda.connector.nats.outbound.model;
+package io.camunda.connector.nats.model;
 
-public record NatsConnectorResponse(String topic, long timestamp, long offset, int partition) {}
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public enum ClientType {
+  @JsonProperty("nats")
+  NATS_CLIENT,
+  @JsonProperty("jetStream")
+  JET_STREAM_CLIENT,
+}

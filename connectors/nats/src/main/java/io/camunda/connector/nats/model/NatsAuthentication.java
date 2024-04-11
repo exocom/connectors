@@ -7,11 +7,9 @@
 package io.camunda.connector.nats.model;
 
 import io.camunda.connector.generator.java.annotation.TemplateProperty;
-import jakarta.validation.constraints.NotEmpty;
 
 public record NatsAuthentication(
-    @NotEmpty
-        @TemplateProperty(
+    @TemplateProperty(
             label = "Authentication type",
             description = "Select the type of authentication to use for the connection",
             group = "authentication",

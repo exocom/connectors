@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
     documentationRef = "https://docs.nats.io/",
     propertyGroups = {
       @ElementTemplate.PropertyGroup(id = "authentication", label = "Authentication"),
+      @ElementTemplate.PropertyGroup(id = "connection", label = "Connection"),
+      @ElementTemplate.PropertyGroup(id = "subscription", label = "Subscription"),
       @ElementTemplate.PropertyGroup(id = "nats", label = "NATS"),
     },
     elementTypes = {

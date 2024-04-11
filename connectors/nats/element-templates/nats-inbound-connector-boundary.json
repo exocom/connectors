@@ -18,6 +18,12 @@
     "id" : "authentication",
     "label" : "Authentication"
   }, {
+    "id" : "connection",
+    "label" : "Connection"
+  }, {
+    "id" : "subscription",
+    "label" : "Subscription"
+  }, {
     "id" : "nats",
     "label" : "NATS"
   }, {
@@ -43,9 +49,6 @@
     "description" : "Select the type of authentication to use for the connection",
     "optional" : false,
     "value" : "none",
-    "constraints" : {
-      "notEmpty" : true
-    },
     "group" : "authentication",
     "binding" : {
       "name" : "authentication.type",
@@ -146,53 +149,95 @@
     },
     "type" : "String"
   }, {
-    "id" : "servers",
+    "id" : "connection.servers",
     "label" : "Servers",
     "description" : "Provide connection server(s), comma-delimited if there are multiple",
     "optional" : false,
     "constraints" : {
       "notEmpty" : true
     },
-    "group" : "nats",
+    "group" : "connection",
     "binding" : {
-      "name" : "servers",
+      "name" : "connection.servers",
       "type" : "zeebe:property"
     },
     "type" : "String"
   }, {
-    "id" : "subject",
-    "label" : "Subject",
-    "description" : "NATS subject to subscribe to",
+    "id" : "connection.connectionName",
+    "label" : "Connection name",
+    "description" : "Provide a name for the connection if left empty processInstanceKey will be used",
+    "optional" : true,
+    "group" : "connection",
+    "binding" : {
+      "name" : "connection.connectionName",
+      "type" : "zeebe:property"
+    },
+    "type" : "String"
+  }, {
+    "id" : "subscription.clientType",
+    "label" : "Client type",
+    "description" : "Select the type of client to use for the connection",
     "optional" : false,
-    "constraints" : {
-      "notEmpty" : true
-    },
-    "group" : "nats",
+    "value" : "nats",
+    "group" : "subscription",
     "binding" : {
-      "name" : "subject",
+      "name" : "subscription.clientType",
       "type" : "zeebe:property"
+    },
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "NATS",
+      "value" : "nats"
+    }, {
+      "name" : "JetStream",
+      "value" : "jetStream"
+    } ]
+  }, {
+    "id" : "subscription.subject",
+    "label" : "Subject",
+    "description" : "NATS subject",
+    "optional" : true,
+    "group" : "subscription",
+    "binding" : {
+      "name" : "subscription.subject",
+      "type" : "zeebe:property"
+    },
+    "condition" : {
+      "property" : "subscription.clientType",
+      "equals" : "nats",
+      "type" : "simple"
     },
     "type" : "String"
   }, {
-    "id" : "queueGroup",
-    "label" : "Queue Group",
-    "description" : "Optional queue group name for load balancing",
+    "id" : "subscription.stream",
+    "label" : "Stream",
+    "description" : "NATS stream name",
     "optional" : true,
-    "group" : "nats",
+    "group" : "subscription",
     "binding" : {
-      "name" : "queueGroup",
+      "name" : "subscription.stream",
       "type" : "zeebe:property"
+    },
+    "condition" : {
+      "property" : "subscription.clientType",
+      "equals" : "jetStream",
+      "type" : "simple"
     },
     "type" : "String"
   }, {
-    "id" : "durableName",
-    "label" : "Durable Name",
-    "description" : "Optional durable name for consumer",
+    "id" : "subscription.consumerName",
+    "label" : "Consumer Name",
+    "description" : "NATS consumer name",
     "optional" : true,
-    "group" : "nats",
+    "group" : "subscription",
     "binding" : {
-      "name" : "durableName",
+      "name" : "subscription.consumerName",
       "type" : "zeebe:property"
+    },
+    "condition" : {
+      "property" : "subscription.clientType",
+      "equals" : "jetStream",
+      "type" : "simple"
     },
     "type" : "String"
   }, {

@@ -9,52 +9,28 @@ package io.camunda.connector.nats.inbound;
 import io.camunda.connector.feel.annotation.FEEL;
 import io.camunda.connector.generator.java.annotation.TemplateProperty;
 import io.camunda.connector.nats.model.NatsAuthentication;
+import io.camunda.connector.nats.model.NatsConnection;
+import io.camunda.connector.nats.model.NatsSubscription;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 
 public record NatsConnectorProperties(
     @Valid @NotNull NatsAuthentication authentication,
-    @FEEL
-        @NotEmpty
-        @TemplateProperty(
-            group = "nats",
-            label = "Servers",
-            description = "Provide connection server(s), comma-delimited if there are multiple")
-        String servers,
-    @NotEmpty
-        @TemplateProperty(
-            group = "nats",
-            label = "Subject",
-            description = "NATS subject to subscribe to")
-        String subject,
-    @TemplateProperty(
-            label = "Queue Group",
-            description = "Optional queue group name for load balancing",
-            group = "nats",
-            optional = true)
-        String queueGroup,
-    @TemplateProperty(
-            label = "Durable Name",
-            description = "Optional durable name for consumer",
-            group = "nats",
-            optional = true)
-        String durableName,
+    @Valid @NotNull NatsConnection connection,
+    @Valid @NotNull NatsSubscription subscription,
     @FEEL
         @TemplateProperty(
             label = "Additional options",
             description = "Provide additional NATS consumer options in JSON",
-            group = "nats",
-            optional = false)
+            group = "nats")
         Map<String, Object> additionalOptions,
     @FEEL
         @TemplateProperty(
             label = "Activation condition",
             description =
                 "Condition under which the connector triggers. Leave empty to catch all events",
-            group = "activation",
-            optional = false)
+            group = "activation")
         String activationCondition,
     @TemplateProperty(
             label = "Result variable",
@@ -67,6 +43,5 @@ public record NatsConnectorProperties(
             label = "Result expression",
             description = "Expression to map the inbound payload to process variables",
             group = "output",
-            optional = false,
             type = TemplateProperty.PropertyType.Text)
         String resultExpression) {}

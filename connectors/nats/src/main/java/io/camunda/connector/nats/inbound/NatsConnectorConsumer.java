@@ -18,6 +18,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
 import io.camunda.connector.api.inbound.Health;
 import io.camunda.connector.api.inbound.InboundConnectorContext;
+import io.camunda.connector.nats.model.ClientType;
 import io.nats.client.*;
 import io.nats.client.support.SSLUtils;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +45,7 @@ public class NatsConnectorConsumer {
   public CompletableFuture<?> future;
 
   private Connection connection;
-  private JetStreamSubscription jetStreamSubscription;
+  private ClientType clientType;
 
   NatsConnectorProperties elementProps;
 
@@ -72,13 +74,8 @@ public class NatsConnectorConsumer {
   }
 
   public void startConsumer() {
-    this.future =
-        CompletableFuture.runAsync(
-            () -> {
-              prepareConsumer();
-              consume();
-            },
-            this.executorService);
+    //              consume();
+    this.future = CompletableFuture.runAsync(this::prepareConsumer, this.executorService);
   }
 
   private void prepareConsumer() {
@@ -89,7 +86,18 @@ public class NatsConnectorConsumer {
       throw new RuntimeException(e);
     }
 
-    Options.Builder builder = new Options.Builder().server(elementProps.servers()).sslContext(ctx);
+    String connectionName =
+        Optional.ofNullable(elementProps.connection().connectionName())
+            .orElse(
+                String.valueOf(
+                    context.getDefinition().bpmnProcessId()
+                        + " v"
+                        + context.getDefinition().version()));
+    Options.Builder builder =
+        new Options.Builder()
+            .server(elementProps.connection().servers())
+            .connectionName(connectionName)
+            .sslContext(ctx);
 
     switch (elementProps.authentication().type()) {
       case USERNAME_PASSWORD -> builder.userInfo(
@@ -122,52 +130,98 @@ public class NatsConnectorConsumer {
       }
     }
 
+    clientType = elementProps.subscription().clientType();
     try (Connection nc = Nats.connect(builder.build())) {
       this.connection = nc;
-      JetStream jetStream = nc.jetStream();
-      // TODO: streaming
-      // NOTE: This is for polling
-      this.jetStreamSubscription = jetStream.subscribe(elementProps.subject());
-      reportUp();
+      if (elementProps.subscription().clientType() == ClientType.JET_STREAM_CLIENT) {
+        JetStream jetstream = nc.jetStream();
+        ////        JetStreamManagement jsm = nc.jetStreamManagement();
+        ////        jsm.addStream(
+        ////            StreamConfiguration.builder()
+        ////                .name("stream")
+        ////                .subjects(elementProps.subscription().subject())
+        ////                .build());
+        ////        jetStreamSubscription =
+        ////            jsm.addConsumer(
+        ////                ConsumerConfiguration.builder()
+        ////                    .stream("stream")
+        ////                    .durable(elementProps.subscription().durableName())
+        ////                    .queue(elementProps.subscription().queueGroup())
+        ////                    .build());
+        reportUp();
+
+        try {
+          String stream = elementProps.subscription().stream();
+          String consumerName = elementProps.subscription().consumerName();
+          ConsumerContext consumerContext = jetstream.getConsumerContext(stream, consumerName);
+
+          try (IterableConsumer consumer = consumerContext.iterate()) {
+            while (shouldLoop) {
+              try {
+                Message nextMessage = consumer.nextMessage(Duration.ofMillis(500));
+                if (nextMessage == null) {
+                  continue;
+                }
+                handleMessage(nextMessage);
+                nextMessage.ack();
+              } catch (Exception ex) {
+                reportDown(ex);
+                throw new RuntimeException(ex);
+              }
+            }
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        } catch (IOException | JetStreamApiException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
     } catch (Exception ex) {
       LOG.error("Failed to initialize connector: {}", ex.getMessage());
       context.reportHealth(Health.down(ex));
       try {
         throw ex;
-      } catch (IOException | InterruptedException | JetStreamApiException e) {
+      } catch (IOException | InterruptedException e) {
         throw new RuntimeException(e);
       }
     }
   }
 
-  public void consume() {
-    while (shouldLoop) {
-      try {
-        pollAndPublish();
-        reportUp();
-      } catch (Exception ex) {
-        reportDown(ex);
-        throw ex;
-      }
-    }
-    LOG.debug("Kafka inbound loop finished");
-  }
+  //  public void consume() {
+  //    if (clientType == ClientType.JET_STREAM_CLIENT) {
+  //
+  //    }
+  //    //        while (shouldLoop) {
+  //    //            try {
+  //    //                if (clientType == ClientType.JET_STREAM_CLIENT) {
+  //    //                    pollJetStream();
+  //    //                }
+  //    //                reportUp();
+  //    //            } catch (Exception ex) {
+  //    //                reportDown(ex);
+  //    //                throw ex;
+  //    //            }
+  //    //        }
+  //    //        LOG.debug("NATS inbound loop finished");
+  //  }
 
-  private void pollAndPublish() {
-    LOG.debug("Polling the subject: {}", jetStreamSubscription.getSubject());
-    try {
-      Message nextMessage = jetStreamSubscription.nextMessage(Duration.ofMillis(500));
-      handleMessage(nextMessage);
-      nextMessage.ack();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  //  private void pollJetStream() {
+  //    try {
+  //      Message nextMessage = consumer.nextMessage(Duration.ofMillis(500));
+  //      handleMessage(nextMessage);
+  //      nextMessage.ack();
+  //    } catch (InterruptedException
+  //        | IOException
+  //        | JetStreamApiException
+  //        | JetStreamStatusCheckedException e) {
+  //      throw new RuntimeException(e);
+  //    }
+  //  }
 
   private void handleMessage(Message message) {
     LOG.trace(
         "NATS message received: subject = {}, value = {}",
-        message.getSubject(),
         new String(message.getData(), StandardCharsets.UTF_8));
     try {
       NatsInboundMessage mappedMessage =
@@ -192,10 +246,12 @@ public class NatsConnectorConsumer {
 
   private void reportUp() {
     var details = new HashMap<String, Object>();
-    details.put("url", connection.getConnectedUrl());
-    details.put("servers", connection.getServers());
-    // TODO : if polling
-    details.put("subject", jetStreamSubscription.getSubject());
+    //    details.put("url", connection.getConnectedUrl());
+    //    details.put("servers", connection.getServers());
+    //    if (clientType == ClientType.JET_STREAM_CLIENT) {
+    //      details.put("stream", elementProps.subscription().stream());
+    //      details.put("consumerName", elementProps.subscription().consumerName());
+    //    }
     var newStatus = Health.up(details);
     if (!newStatus.equals(consumerStatus)) {
       consumerStatus = newStatus;
