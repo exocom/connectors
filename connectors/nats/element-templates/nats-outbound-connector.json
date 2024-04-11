@@ -176,6 +176,25 @@
     },
     "type" : "String"
   }, {
+    "id" : "clientType",
+    "label" : "Client type",
+    "description" : "Select the type of client to use for the connection",
+    "optional" : false,
+    "value" : "nats",
+    "group" : "nats",
+    "binding" : {
+      "name" : "clientType",
+      "type" : "zeebe:input"
+    },
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "NATS",
+      "value" : "nats"
+    }, {
+      "name" : "JetStream",
+      "value" : "jetStream"
+    } ]
+  }, {
     "id" : "subject",
     "label" : "Subject",
     "description" : "Provide the subject to send the message to",
@@ -202,18 +221,6 @@
     "group" : "nats",
     "binding" : {
       "name" : "message",
-      "type" : "zeebe:input"
-    },
-    "type" : "String"
-  }, {
-    "id" : "headers",
-    "label" : "Headers",
-    "description" : "Provide NATS producer headers in JSON",
-    "optional" : true,
-    "feel" : "required",
-    "group" : "nats",
-    "binding" : {
-      "name" : "headers",
       "type" : "zeebe:input"
     },
     "type" : "String"

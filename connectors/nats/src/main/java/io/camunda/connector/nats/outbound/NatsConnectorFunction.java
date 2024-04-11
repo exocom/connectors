@@ -30,6 +30,7 @@ import io.nats.client.api.PublishAck;
     inputVariables = {
       "authentication",
       "connection",
+      "clientType",
       "subject",
       "message",
       "additionalProperties",

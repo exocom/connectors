@@ -22,7 +22,7 @@ public record NatsConnectorRequest(
     @TemplateProperty(
             label = "Client type",
             description = "Select the type of client to use for the connection",
-            group = "subscription",
+            group = "nats",
             type = TemplateProperty.PropertyType.Dropdown,
             defaultValue = "nats",
             choices = {
@@ -42,13 +42,6 @@ public record NatsConnectorRequest(
             description = "Provide the message to send",
             group = "nats")
         String message,
-    @TemplateProperty(
-            group = "nats",
-            label = "Headers",
-            optional = true,
-            feel = Property.FeelMode.required,
-            description = "Provide NATS producer headers in JSON")
-        Map<String, String> headers,
     @TemplateProperty(
             group = "nats",
             label = "Additional properties",

@@ -230,18 +230,6 @@
     },
     "type" : "String"
   }, {
-    "id" : "headers",
-    "label" : "Headers",
-    "description" : "Provide NATS producer headers in JSON",
-    "optional" : true,
-    "feel" : "required",
-    "group" : "nats",
-    "binding" : {
-      "name" : "headers",
-      "type" : "zeebe:input"
-    },
-    "type" : "String"
-  }, {
     "id" : "additionalProperties",
     "label" : "Additional properties",
     "description" : "Provide additional NATS producer properties in JSON",
