@@ -145,19 +145,6 @@ public class NatsConnectorConsumer {
     try (Connection nc = Nats.connect(options)) {
       this.connection = nc;
       JetStream jetstream = nc.jetStream();
-      ////        JetStreamManagement jsm = nc.jetStreamManagement();
-      ////        jsm.addStream(
-      ////            StreamConfiguration.builder()
-      ////                .name("stream")
-      ////                .subjects(elementProps.subscription().subject())
-      ////                .build());
-      ////        jetStreamSubscription =
-      ////            jsm.addConsumer(
-      ////                ConsumerConfiguration.builder()
-      ////                    .stream("stream")
-      ////                    .durable(elementProps.subscription().durableName())
-      ////                    .queue(elementProps.subscription().queueGroup())
-      ////                    .build());
       reportUp();
 
       try {
