@@ -23,6 +23,7 @@ public record NatsConnectorRequest(
             label = "Client type",
             description = "Select the type of client to use for the connection",
             group = "nats",
+            id = "clientType",
             type = TemplateProperty.PropertyType.Dropdown,
             defaultValue = "nats",
             choices = {
