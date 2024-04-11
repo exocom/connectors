@@ -6,6 +6,8 @@
  */
 package io.camunda.connector.nats.inbound;
 
+import static io.camunda.connector.nats.NatsConnectionOptions.getConnectionOptions;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
@@ -20,18 +22,14 @@ import io.camunda.connector.api.inbound.Health;
 import io.camunda.connector.api.inbound.InboundConnectorContext;
 import io.camunda.connector.nats.model.ClientType;
 import io.nats.client.*;
-import io.nats.client.support.SSLUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javax.net.ssl.SSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,68 +75,21 @@ public class NatsConnectorConsumer {
     this.future =
         CompletableFuture.runAsync(
             () -> {
-              Options connectionOptions = getConnectionOptions();
+              clientType = elementProps.subscription().clientType();
+              String processIdAndVersion =
+                  context.getDefinition().bpmnProcessId()
+                      + " v"
+                      + context.getDefinition().version();
+              Options connectionOptions =
+                  getConnectionOptions(
+                      elementProps.authentication(),
+                      elementProps.connection(),
+                      processIdAndVersion);
               if (elementProps.subscription().clientType() == ClientType.JET_STREAM_CLIENT) {
                 consumeJetStream(connectionOptions);
               }
             },
             this.executorService);
-  }
-
-  private Options getConnectionOptions() {
-    SSLContext ctx = null;
-    try {
-      ctx = SSLUtils.createTrustAllTlsContext();
-    } catch (GeneralSecurityException e) {
-      throw new RuntimeException(e);
-    }
-
-    String connectionName =
-        Optional.ofNullable(elementProps.connection().connectionName())
-            .orElse(
-                String.valueOf(
-                    context.getDefinition().bpmnProcessId()
-                        + " v"
-                        + context.getDefinition().version()));
-    Options.Builder builder =
-        new Options.Builder()
-            .server(elementProps.connection().servers())
-            .connectionName(connectionName)
-            .sslContext(ctx);
-
-    switch (elementProps.authentication().type()) {
-      case USERNAME_PASSWORD -> builder.userInfo(
-          elementProps.authentication().username(), elementProps.authentication().password());
-      case TOKEN -> builder.token(elementProps.authentication().token().toCharArray());
-      case JWT -> {
-        NKey nKey = NKey.fromSeed(elementProps.authentication().nKeySeed().toCharArray());
-        builder.authHandler(
-            new AuthHandler() {
-              public char[] getID() {
-                try {
-                  return nKey.getPublicKey();
-                } catch (GeneralSecurityException | IOException | NullPointerException ex) {
-                  return null;
-                }
-              }
-
-              public byte[] sign(byte[] nonce) {
-                try {
-                  return nKey.sign(nonce);
-                } catch (GeneralSecurityException | IOException | NullPointerException ex) {
-                  return null;
-                }
-              }
-
-              public char[] getJWT() {
-                return elementProps.authentication().jwt().toCharArray();
-              }
-            });
-      }
-    }
-
-    clientType = elementProps.subscription().clientType();
-    return builder.build();
   }
 
   private void consumeJetStream(Options options) {

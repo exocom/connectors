@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 @InboundConnector(name = "NATS Consumer", type = "io.camunda:connector-nats-inbound:1")
 @ElementTemplate(
-    id = "io.camunda.connectors.webhook",
+    id = "io.camunda.connectors.inbound.NATS.v1",
     name = "NATS Event Connector",
     icon = "icon.svg",
     version = 1,
