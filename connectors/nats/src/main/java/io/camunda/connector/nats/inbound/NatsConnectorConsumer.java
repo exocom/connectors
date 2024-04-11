@@ -74,11 +74,18 @@ public class NatsConnectorConsumer {
   }
 
   public void startConsumer() {
-    //              consume();
-    this.future = CompletableFuture.runAsync(this::prepareConsumer, this.executorService);
+    this.future =
+        CompletableFuture.runAsync(
+            () -> {
+              Options connectionOptions = getConnectionOptions();
+              if (elementProps.subscription().clientType() == ClientType.JET_STREAM_CLIENT) {
+                consumeJetStream(connectionOptions);
+              }
+            },
+            this.executorService);
   }
 
-  private void prepareConsumer() {
+  private Options getConnectionOptions() {
     SSLContext ctx = null;
     try {
       ctx = SSLUtils.createTrustAllTlsContext();
@@ -131,52 +138,53 @@ public class NatsConnectorConsumer {
     }
 
     clientType = elementProps.subscription().clientType();
-    try (Connection nc = Nats.connect(builder.build())) {
+    return builder.build();
+  }
+
+  private void consumeJetStream(Options options) {
+    try (Connection nc = Nats.connect(options)) {
       this.connection = nc;
-      if (elementProps.subscription().clientType() == ClientType.JET_STREAM_CLIENT) {
-        JetStream jetstream = nc.jetStream();
-        ////        JetStreamManagement jsm = nc.jetStreamManagement();
-        ////        jsm.addStream(
-        ////            StreamConfiguration.builder()
-        ////                .name("stream")
-        ////                .subjects(elementProps.subscription().subject())
-        ////                .build());
-        ////        jetStreamSubscription =
-        ////            jsm.addConsumer(
-        ////                ConsumerConfiguration.builder()
-        ////                    .stream("stream")
-        ////                    .durable(elementProps.subscription().durableName())
-        ////                    .queue(elementProps.subscription().queueGroup())
-        ////                    .build());
-        reportUp();
+      JetStream jetstream = nc.jetStream();
+      ////        JetStreamManagement jsm = nc.jetStreamManagement();
+      ////        jsm.addStream(
+      ////            StreamConfiguration.builder()
+      ////                .name("stream")
+      ////                .subjects(elementProps.subscription().subject())
+      ////                .build());
+      ////        jetStreamSubscription =
+      ////            jsm.addConsumer(
+      ////                ConsumerConfiguration.builder()
+      ////                    .stream("stream")
+      ////                    .durable(elementProps.subscription().durableName())
+      ////                    .queue(elementProps.subscription().queueGroup())
+      ////                    .build());
+      reportUp();
 
-        try {
-          String stream = elementProps.subscription().stream();
-          String consumerName = elementProps.subscription().consumerName();
-          ConsumerContext consumerContext = jetstream.getConsumerContext(stream, consumerName);
+      try {
+        String stream = elementProps.subscription().stream();
+        String consumerName = elementProps.subscription().consumerName();
+        ConsumerContext consumerContext = jetstream.getConsumerContext(stream, consumerName);
 
-          try (IterableConsumer consumer = consumerContext.iterate()) {
-            while (shouldLoop) {
-              try {
-                Message nextMessage = consumer.nextMessage(Duration.ofMillis(500));
-                if (nextMessage == null) {
-                  continue;
-                }
-                handleMessage(nextMessage);
-                nextMessage.ack();
-              } catch (Exception ex) {
-                reportDown(ex);
-                throw new RuntimeException(ex);
+        try (IterableConsumer consumer = consumerContext.iterate()) {
+          while (shouldLoop) {
+            try {
+              Message nextMessage = consumer.nextMessage(Duration.ofMillis(500));
+              if (nextMessage == null) {
+                continue;
               }
+              handleMessage(nextMessage);
+              nextMessage.ack();
+            } catch (Exception ex) {
+              reportDown(ex);
+              throw new RuntimeException(ex);
             }
-          } catch (Exception e) {
-            throw new RuntimeException(e);
           }
-        } catch (IOException | JetStreamApiException e) {
+        } catch (Exception e) {
           throw new RuntimeException(e);
         }
+      } catch (IOException | JetStreamApiException e) {
+        throw new RuntimeException(e);
       }
-
     } catch (Exception ex) {
       LOG.error("Failed to initialize connector: {}", ex.getMessage());
       context.reportHealth(Health.down(ex));
@@ -187,37 +195,6 @@ public class NatsConnectorConsumer {
       }
     }
   }
-
-  //  public void consume() {
-  //    if (clientType == ClientType.JET_STREAM_CLIENT) {
-  //
-  //    }
-  //    //        while (shouldLoop) {
-  //    //            try {
-  //    //                if (clientType == ClientType.JET_STREAM_CLIENT) {
-  //    //                    pollJetStream();
-  //    //                }
-  //    //                reportUp();
-  //    //            } catch (Exception ex) {
-  //    //                reportDown(ex);
-  //    //                throw ex;
-  //    //            }
-  //    //        }
-  //    //        LOG.debug("NATS inbound loop finished");
-  //  }
-
-  //  private void pollJetStream() {
-  //    try {
-  //      Message nextMessage = consumer.nextMessage(Duration.ofMillis(500));
-  //      handleMessage(nextMessage);
-  //      nextMessage.ack();
-  //    } catch (InterruptedException
-  //        | IOException
-  //        | JetStreamApiException
-  //        | JetStreamStatusCheckedException e) {
-  //      throw new RuntimeException(e);
-  //    }
-  //  }
 
   private void handleMessage(Message message) {
     LOG.trace(
