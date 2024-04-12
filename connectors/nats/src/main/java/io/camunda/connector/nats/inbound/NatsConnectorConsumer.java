@@ -143,7 +143,8 @@ public class NatsConnectorConsumer {
           new NatsInboundMessage(
               message.getConnection().getConnectedUrl(),
               message.getSubject(),
-              new String(message.getData(), StandardCharsets.UTF_8));
+              new String(message.getData(), StandardCharsets.UTF_8),
+              objectMapper);
       this.context.correlateWithResult(mappedMessage);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);

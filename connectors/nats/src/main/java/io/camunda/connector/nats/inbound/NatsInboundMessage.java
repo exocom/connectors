@@ -15,11 +15,10 @@ public class NatsInboundMessage {
   private final String subject;
   private final Object message;
 
-  public NatsInboundMessage(String url, String subject, String message)
+  public NatsInboundMessage(String url, String subject, String message, ObjectMapper mapper)
       throws JsonProcessingException {
     this.url = url;
     this.subject = subject;
-    ObjectMapper mapper = new ObjectMapper();
     this.message = mapper.readTree(message);
   }
 
