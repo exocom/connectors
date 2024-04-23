@@ -27,17 +27,20 @@ import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.EvictingQueue;
+import io.camunda.connector.api.inbound.ProcessElement;
 import io.camunda.connector.api.inbound.webhook.WebhookConnectorExecutable;
 import io.camunda.connector.api.inbound.webhook.WebhookProcessingPayload;
 import io.camunda.connector.api.inbound.webhook.WebhookResult;
 import io.camunda.connector.api.json.ConnectorsObjectMapperSupplier;
 import io.camunda.connector.runtime.core.inbound.InboundConnectorContextImpl;
-import io.camunda.connector.runtime.core.inbound.InboundConnectorDefinitionImpl;
+import io.camunda.connector.runtime.core.inbound.InboundConnectorDetails;
+import io.camunda.connector.runtime.core.inbound.InboundConnectorElement;
 import io.camunda.connector.runtime.core.inbound.correlation.InboundCorrelationHandler;
 import io.camunda.connector.runtime.core.inbound.correlation.StartEventCorrelationPoint;
-import io.camunda.connector.runtime.inbound.lifecycle.ActiveInboundConnector;
+import io.camunda.connector.runtime.inbound.executable.RegisteredExecutable;
 import io.camunda.connector.runtime.inbound.webhook.WebhookConnectorRegistry;
 import io.camunda.connector.validation.impl.DefaultValidationProvider;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,12 +76,16 @@ public class WebhookControllerPlainJavaTests {
     var processB1 = buildConnector(webhookDefinition("processB", 1, "myPath2"));
 
     webhook.register(processA1);
-    webhook.deregister(processA1);
+
+    // create a new object to ensure correct instance comparison
+    var processA1Copy = buildConnector(webhookDefinition("processA", 1, "myPath"));
+    webhook.deregister(processA1Copy);
 
     webhook.register(processA2);
 
     webhook.register(processB1);
-    webhook.deregister(processB1);
+    var processB1Copy = buildConnector(webhookDefinition("processB", 1, "myPath2"));
+    webhook.deregister(processB1Copy);
 
     var connectorForPath1 = webhook.getWebhookConnectorByContextPath("myPath");
 
@@ -86,7 +93,10 @@ public class WebhookControllerPlainJavaTests {
     assertTrue(webhook.isRegistered(processA2), "A2 is registered");
     assertFalse(webhook.isRegistered(processA1), "A1 is not registered");
     assertFalse(webhook.isRegistered(processB1), "B1 is not registered");
-    assertEquals(2, connectorForPath1.get().context().getDefinition().version(), "The newest one");
+    assertEquals(
+        2,
+        connectorForPath1.get().context().getDefinition().elements().getFirst().version(),
+        "The newest one");
 
     var connectorForPath2 = webhook.getWebhookConnectorByContextPath("myPath2");
     assertTrue(connectorForPath2.isEmpty(), "No one - as it was deleted.");
@@ -127,7 +137,8 @@ public class WebhookControllerPlainJavaTests {
 
   private static long nextProcessDefinitionKey = 0L;
 
-  public static ActiveInboundConnector buildConnector(InboundConnectorDefinitionImpl definition) {
+  public static RegisteredExecutable.Activated buildConnector(
+      InboundConnectorDetails connectorData) {
     WebhookConnectorExecutable executable = mock(WebhookConnectorExecutable.class);
     try {
       Mockito.when(executable.triggerWebhook(any(WebhookProcessingPayload.class)))
@@ -135,10 +146,10 @@ public class WebhookControllerPlainJavaTests {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    return new ActiveInboundConnector(executable, buildContext(definition));
+    return new RegisteredExecutable.Activated(executable, buildContext(connectorData));
   }
 
-  public static InboundConnectorContextImpl buildContext(InboundConnectorDefinitionImpl def) {
+  public static InboundConnectorContextImpl buildContext(InboundConnectorDetails def) {
     var context =
         new InboundConnectorContextImpl(
             name -> null,
@@ -152,21 +163,20 @@ public class WebhookControllerPlainJavaTests {
     return spy(context);
   }
 
-  public static InboundConnectorDefinitionImpl webhookDefinition(
+  public static InboundConnectorDetails webhookDefinition(
       String bpmnProcessId, int version, String path) {
-    return webhookDefinition(++nextProcessDefinitionKey, bpmnProcessId, version, path);
+    return new InboundConnectorDetails(
+        bpmnProcessId + version + path,
+        List.of(webhookElement(++nextProcessDefinitionKey, bpmnProcessId, version, path)));
   }
 
-  public static InboundConnectorDefinitionImpl webhookDefinition(
+  public static InboundConnectorElement webhookElement(
       long processDefinitionKey, String bpmnProcessId, int version, String path) {
 
-    return new InboundConnectorDefinitionImpl(
+    return new InboundConnectorElement(
         Map.of("inbound.type", "io.camunda:webhook:1", "inbound.context", path),
         new StartEventCorrelationPoint(bpmnProcessId, version, processDefinitionKey),
-        bpmnProcessId,
-        version,
-        processDefinitionKey,
-        "testElement",
-        "testTenantId");
+        new ProcessElement(
+            bpmnProcessId, version, processDefinitionKey, "testElement", "testTenantId"));
   }
 }

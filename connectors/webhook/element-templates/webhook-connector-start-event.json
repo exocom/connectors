@@ -4,7 +4,7 @@
   "id" : "io.camunda.connectors.webhook.WebhookConnector.v1",
   "description" : "Configure webhook to receive callbacks",
   "documentationRef" : "https://docs.camunda.io/docs/components/connectors/out-of-the-box-connectors/http-webhook/",
-  "version" : 10,
+  "version" : 11,
   "category" : {
     "id" : "connectors",
     "name" : "Connectors"
@@ -330,14 +330,14 @@
     },
     "type" : "String"
   }, {
-    "id" : "inbound.responseBodyExpression",
-    "label" : "Response body expression",
-    "description" : "Specify condition and response",
+    "id" : "inbound.responseExpression",
+    "label" : "Response expression",
+    "description" : "Expression used to generate the HTTP response",
     "optional" : true,
     "feel" : "required",
     "group" : "webhookResponse",
     "binding" : {
-      "name" : "inbound.responseBodyExpression",
+      "name" : "inbound.responseExpression",
       "type" : "zeebe:property"
     },
     "type" : "Text"

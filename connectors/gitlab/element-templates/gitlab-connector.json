@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
   "name": "GitLab Outbound Connector",
   "id": "io.camunda.connectors.GitLab.v1",
-  "version": 4,
+  "version": 5,
   "description": "Administer and work with issues, releases, and more",
   "icon": {
     "contents": "data:image/svg+xml;utf8,%3Csvg width='18px' height='18px' viewBox='0 -10 256 256' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' preserveAspectRatio='xMidYMid'%3E%3Cg%3E%3Cpath d='M128.07485,236.074667 L128.07485,236.074667 L175.17885,91.1043048 L80.9708495,91.1043048 L128.07485,236.074667 L128.07485,236.074667 Z' fill='%23E24329'%3E%3C/path%3E%3Cpath d='M128.07485,236.074423 L80.9708495,91.104061 L14.9557638,91.104061 L128.07485,236.074423 L128.07485,236.074423 Z' fill='%23FC6D26'%3E%3C/path%3E%3Cpath d='M14.9558857,91.1044267 L14.9558857,91.1044267 L0.641828571,135.159589 C-0.663771429,139.17757 0.766171429,143.57955 4.18438095,146.06275 L128.074971,236.074789 L14.9558857,91.1044267 L14.9558857,91.1044267 Z' fill='%23FCA326'%3E%3C/path%3E%3Cpath d='M14.9558857,91.1045486 L80.9709714,91.1045486 L52.6000762,3.79026286 C51.1408762,-0.703146667 44.7847619,-0.701927619 43.3255619,3.79026286 L14.9558857,91.1045486 L14.9558857,91.1045486 Z' fill='%23E24329'%3E%3C/path%3E%3Cpath d='M128.07485,236.074423 L175.17885,91.104061 L241.193935,91.104061 L128.07485,236.074423 L128.07485,236.074423 Z' fill='%23FC6D26'%3E%3C/path%3E%3Cpath d='M241.193935,91.1044267 L241.193935,91.1044267 L255.507992,135.159589 C256.813592,139.17757 255.38365,143.57955 251.96544,146.06275 L128.07485,236.074789 L241.193935,91.1044267 L241.193935,91.1044267 Z' fill='%23FCA326'%3E%3C/path%3E%3Cpath d='M241.193935,91.1045486 L175.17885,91.1045486 L203.549745,3.79026286 C205.008945,-0.703146667 211.365059,-0.701927619 212.824259,3.79026286 L241.193935,91.1045486 L241.193935,91.1045486 Z' fill='%23E24329'%3E%3C/path%3E%3C/g%3E%3C/svg%3E"
@@ -129,7 +129,7 @@
     },
     {
       "label": "Operation",
-      "id": "operation",
+      "id": "issueOperation",
       "group": "operation",
       "description": "Choose operation to perform",
       "type": "Dropdown",
@@ -166,7 +166,7 @@
     },
     {
       "label": "Operation",
-      "id": "operation",
+      "id": "releaseOperation",
       "group": "operation",
       "description": "Choose operation to perform",
       "type": "Dropdown",
@@ -195,7 +195,7 @@
     },
     {
       "label": "Operation",
-      "id": "operation",
+      "id": "branchOperation",
       "group": "operation",
       "description": "Choose operation to perform",
       "type": "Dropdown",
@@ -220,7 +220,7 @@
     },
     {
       "label": "Operation",
-      "id": "operation",
+      "id": "reposOperation",
       "group": "operation",
       "description": "Choose operation to perform",
       "type": "Dropdown",
@@ -228,6 +228,14 @@
         {
           "name": "Create new file in repository",
           "value": "createRepositoryFile"
+        },
+        {
+          "name": "Get file from repository",
+          "value": "getRepositoryFile"
+        },
+        {
+          "name": "Update existing file in repository",
+          "value": "updateRepositoryFile"
         }
       ],
       "binding": {
@@ -241,7 +249,7 @@
     },
     {
       "label": "Operation",
-      "id": "operation",
+      "id": "mergeOperation",
       "group": "operation",
       "description": "Choose operation to perform",
       "type": "Dropdown",
@@ -268,13 +276,39 @@
         "name": "method"
       },
       "condition": {
-        "property": "operation",
+        "property": "branchOperation",
+        "oneOf": [
+          "getRepositoryBranchesByProjectId"
+        ]
+      }
+    },
+    {
+      "type": "Hidden",
+      "value": "get",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "method"
+      },
+      "condition": {
+        "property": "releaseOperation",
+        "oneOf": [
+          "getReleasesByProjectId",
+          "getReleaseByTagName"
+        ]
+      }
+    },
+    {
+      "type": "Hidden",
+      "value": "get",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "method"
+      },
+      "condition": {
+        "property": "issueOperation",
         "oneOf": [
           "getIssueById",
-          "searchIssues",
-          "getReleasesByProjectId",
-          "getReleaseByTagName",
-          "getRepositoryBranchesByProjectId"
+          "searchIssues"
         ]
       }
     },
@@ -286,14 +320,94 @@
         "name": "method"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
+        "oneOf": [
+          "createMergeRequest"
+        ]
+      }
+    },
+    {
+      "type": "Hidden",
+      "value": "post",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "method"
+      },
+      "condition": {
+        "property": "reposOperation",
+        "oneOf": [
+          "createRepositoryFile"
+        ]
+      }
+    },
+    {
+      "type": "Hidden",
+      "value": "get",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "method"
+      },
+      "condition": {
+        "property": "reposOperation",
+        "oneOf": [
+          "getRepositoryFile"
+        ]
+      }
+    },
+    {
+      "type": "Hidden",
+      "value": "put",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "method"
+      },
+      "condition": {
+        "property": "reposOperation",
+        "oneOf": [
+          "updateRepositoryFile"
+        ]
+      }
+    },
+    {
+      "type": "Hidden",
+      "value": "post",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "method"
+      },
+      "condition": {
+        "property": "branchOperation",
+        "oneOf": [
+          "createRepositoryBranch"
+        ]
+      }
+    },
+    {
+      "type": "Hidden",
+      "value": "post",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "method"
+      },
+      "condition": {
+        "property": "releaseOperation",
+        "oneOf": [
+          "createRelease"
+        ]
+      }
+    },
+    {
+      "type": "Hidden",
+      "value": "post",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "method"
+      },
+      "condition": {
+        "property": "issueOperation",
         "oneOf": [
           "commentToAnIssue",
-          "createAnIssue",
-          "createRelease",
-          "createRepositoryBranch",
-          "createRepositoryFile",
-          "createMergeRequest"
+          "createAnIssue"
         ]
       }
     },
@@ -305,7 +419,7 @@
         "name": "method"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "deleteAnIssue"
         ]
@@ -325,19 +439,97 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
+        "oneOf": [
+          "createMergeRequest"
+        ]
+      }
+    },
+    {
+      "label": "Project ID",
+      "description": "The global ID or URL-encoded path of the project owned by the authenticated user",
+      "group": "operation",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "projectId"
+      },
+      "constraints": {
+        "notEmpty": true
+      },
+      "condition": {
+        "property": "reposOperation",
+        "oneOf": [
+          "createRepositoryFile",
+          "getRepositoryFile",
+          "updateRepositoryFile"
+        ]
+      }
+    },
+    {
+      "label": "Project ID",
+      "description": "The global ID or URL-encoded path of the project owned by the authenticated user",
+      "group": "operation",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "projectId"
+      },
+      "constraints": {
+        "notEmpty": true
+      },
+      "condition": {
+        "property": "branchOperation",
+        "oneOf": [
+          "getRepositoryBranchesByProjectId",
+          "createRepositoryBranch"
+        ]
+      }
+    },
+    {
+      "label": "Project ID",
+      "description": "The global ID or URL-encoded path of the project owned by the authenticated user",
+      "group": "operation",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "projectId"
+      },
+      "constraints": {
+        "notEmpty": true
+      },
+      "condition": {
+        "property": "releaseOperation",
+        "oneOf": [
+          "getReleasesByProjectId",
+          "getReleaseByTagName",
+          "createRelease"
+        ]
+      }
+    },
+    {
+      "label": "Project ID",
+      "description": "The global ID or URL-encoded path of the project owned by the authenticated user",
+      "group": "operation",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "projectId"
+      },
+      "constraints": {
+        "notEmpty": true
+      },
+      "condition": {
+        "property": "issueOperation",
         "oneOf": [
           "getIssueById",
           "createAnIssue",
           "deleteAnIssue",
-          "commentToAnIssue",
-          "getReleasesByProjectId",
-          "getReleaseByTagName",
-          "createRelease",
-          "getRepositoryBranchesByProjectId",
-          "createRepositoryBranch",
-          "createRepositoryFile",
-          "createMergeRequest"
+          "commentToAnIssue"
         ]
       }
     },
@@ -355,7 +547,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "getIssueById"
         ]
@@ -369,7 +561,7 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "getIssueById"
         ]
@@ -389,7 +581,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "createAnIssue"
         ]
@@ -409,7 +601,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "createAnIssue"
         ]
@@ -423,7 +615,7 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "createAnIssue"
         ]
@@ -437,7 +629,7 @@
         "name": "queryParameters"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "createAnIssue"
         ]
@@ -457,7 +649,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "deleteAnIssue"
         ]
@@ -471,7 +663,7 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "deleteAnIssue"
         ]
@@ -491,7 +683,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "commentToAnIssue"
         ]
@@ -511,7 +703,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "commentToAnIssue"
         ]
@@ -538,7 +730,7 @@
         "name": "issueIsConfidential"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "commentToAnIssue"
         ]
@@ -552,7 +744,7 @@
         "name": "queryParameters"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "commentToAnIssue"
         ]
@@ -566,7 +758,7 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "commentToAnIssue"
         ]
@@ -598,7 +790,7 @@
         "name": "searchIssueScope"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "searchIssues"
         ]
@@ -630,7 +822,7 @@
         "name": "searchIssueState"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "searchIssues"
         ]
@@ -648,7 +840,7 @@
         "name": "searchIssueAssigneeId"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "searchIssues"
         ]
@@ -666,7 +858,7 @@
         "name": "searchIssueAssigneeUsername"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "searchIssues"
         ]
@@ -684,7 +876,7 @@
         "name": "searchIssueAuthorId"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "searchIssues"
         ]
@@ -702,7 +894,7 @@
         "name": "searchIssueSearch"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "searchIssues"
         ]
@@ -716,7 +908,7 @@
         "name": "queryParameters"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "searchIssues"
         ]
@@ -730,7 +922,7 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "issueOperation",
         "oneOf": [
           "searchIssues"
         ]
@@ -744,7 +936,7 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "releaseOperation",
         "oneOf": [
           "getReleasesByProjectId"
         ]
@@ -764,7 +956,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "releaseOperation",
         "oneOf": [
           "getReleaseByTagName"
         ]
@@ -778,7 +970,7 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "releaseOperation",
         "oneOf": [
           "getReleaseByTagName"
         ]
@@ -798,7 +990,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "releaseOperation",
         "oneOf": [
           "createRelease"
         ]
@@ -818,7 +1010,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "releaseOperation",
         "oneOf": [
           "createRelease"
         ]
@@ -836,7 +1028,7 @@
         "name": "releaseName"
       },
       "condition": {
-        "property": "operation",
+        "property": "releaseOperation",
         "oneOf": [
           "createRelease"
         ]
@@ -854,7 +1046,7 @@
         "name": "releaseDescription"
       },
       "condition": {
-        "property": "operation",
+        "property": "releaseOperation",
         "oneOf": [
           "createRelease"
         ]
@@ -868,7 +1060,7 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "releaseOperation",
         "oneOf": [
           "createRelease"
         ]
@@ -882,7 +1074,7 @@
         "name": "body"
       },
       "condition": {
-        "property": "operation",
+        "property": "releaseOperation",
         "oneOf": [
           "createRelease"
         ]
@@ -900,7 +1092,7 @@
         "name": "searchString"
       },
       "condition": {
-        "property": "operation",
+        "property": "branchOperation",
         "oneOf": [
           "getRepositoryBranchesByProjectId"
         ]
@@ -918,7 +1110,7 @@
         "name": "regex"
       },
       "condition": {
-        "property": "operation",
+        "property": "branchOperation",
         "oneOf": [
           "getRepositoryBranchesByProjectId"
         ]
@@ -932,7 +1124,7 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "branchOperation",
         "oneOf": [
           "getRepositoryBranchesByProjectId",
           "createRepositoryBranch"
@@ -947,7 +1139,7 @@
         "name": "queryParameters"
       },
       "condition": {
-        "property": "operation",
+        "property": "branchOperation",
         "oneOf": [
           "getRepositoryBranchesByProjectId"
         ]
@@ -967,7 +1159,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "branchOperation",
         "oneOf": [
           "createRepositoryBranch"
         ]
@@ -987,7 +1179,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "branchOperation",
         "oneOf": [
           "createRepositoryBranch"
         ]
@@ -1001,7 +1193,7 @@
         "name": "body"
       },
       "condition": {
-        "property": "operation",
+        "property": "branchOperation",
         "oneOf": [
           "createRepositoryBranch"
         ]
@@ -1009,7 +1201,7 @@
     },
     {
       "label": "Branch name",
-      "description": "Name of the new branch to create the file in. The commit is added to this branch",
+      "description": "Name of the new branch to modify the file in. The commit is added to this branch",
       "group": "operation",
       "type": "String",
       "feel": "optional",
@@ -1021,15 +1213,16 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "updateRepositoryFile"
         ]
       }
     },
     {
       "label": "Commit message",
-      "description": "Message of the commit that adds the new file",
+      "description": "Message of the commit that modifies the file",
       "group": "operation",
       "type": "String",
       "feel": "optional",
@@ -1041,14 +1234,15 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "updateRepositoryFile"
         ]
       }
     },
     {
-      "label": "Content",
+      "label": "File content",
       "group": "operation",
       "type": "Text",
       "feel": "optional",
@@ -1060,15 +1254,16 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "updateRepositoryFile"
         ]
       }
     },
     {
       "label": "File path",
-      "description": "URL-encoded full path to new file. For example, lib%2Fclass%2Erb",
+      "description": "URL-encoded full path to the file. For example, lib%2Fclass%2Erb",
       "group": "operation",
       "type": "String",
       "feel": "optional",
@@ -1080,9 +1275,11 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "getRepositoryFile",
+          "updateRepositoryFile"
         ]
       }
     },
@@ -1098,9 +1295,10 @@
         "name": "authorEmail"
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "updateRepositoryFile"
         ]
       }
     },
@@ -1116,9 +1314,10 @@
         "name": "authorName"
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "updateRepositoryFile"
         ]
       }
     },
@@ -1134,9 +1333,10 @@
         "name": "encoding"
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "updateRepositoryFile"
         ]
       }
     },
@@ -1152,15 +1352,16 @@
         "name": "executeFilemode"
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "updateRepositoryFile"
         ]
       }
     },
     {
       "label": "Start branch",
-      "description": "Name of the branch to start the new branch from",
+      "description": "Name of the base branch to start the new branch from",
       "group": "operation",
       "type": "String",
       "feel": "optional",
@@ -1170,9 +1371,30 @@
         "name": "startBranch"
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "updateRepositoryFile"
+        ]
+      }
+    },
+    {
+      "label": "Reference",
+      "description": "Name of the branch, tag or commit the file is fetched from",
+      "group": "operation",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "repositoryFileReference"
+      },
+      "constraints": {
+        "notEmpty": true
+      },
+      "condition": {
+        "property": "branchOperation",
+        "oneOf": [
+          "getRepositoryFile"
         ]
       }
     },
@@ -1184,9 +1406,11 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "getRepositoryFile",
+          "updateRepositoryFile"
         ]
       }
     },
@@ -1198,9 +1422,24 @@
         "name": "body"
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
-          "createRepositoryFile"
+          "createRepositoryFile",
+          "updateRepositoryFile"
+        ]
+      }
+    },
+    {
+      "type": "Hidden",
+      "value": "={\"ref\":repositoryFileReference}",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "queryParameters"
+      },
+      "condition": {
+        "property": "reposOperation",
+        "oneOf": [
+          "getRepositoryFile"
         ]
       }
     },
@@ -1214,10 +1453,10 @@
         "name": "sourceBranch"
       },
       "constraints": {
-          "notEmpty": true
+        "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1236,7 +1475,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1255,7 +1494,7 @@
         "notEmpty": true
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1273,7 +1512,7 @@
         "name": "allowCollaboration"
       },
       "condition": {
-        "property": "operation",
+        "property": "reposOperation",
         "oneOf": [
           "createRepositoryFile"
         ]
@@ -1291,7 +1530,7 @@
         "name": "assigneeIds"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1308,7 +1547,7 @@
         "name": "description"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1326,7 +1565,7 @@
         "name": "labels"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1343,7 +1582,7 @@
         "name": "assigneeIds"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1361,7 +1600,7 @@
         "name": "removeSourceBranch"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1379,7 +1618,7 @@
         "name": "reviewerIds"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1397,7 +1636,7 @@
         "name": "squash"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1415,7 +1654,7 @@
         "name": "targetProjectId"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1429,7 +1668,7 @@
         "name": "url"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
@@ -1443,7 +1682,7 @@
         "name": "body"
       },
       "condition": {
-        "property": "operation",
+        "property": "mergeOperation",
         "oneOf": [
           "createMergeRequest"
         ]
